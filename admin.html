@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — Mercearia Miranda</title>
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+
+  <!-- LOGIN -->
+  <div id="login-screen">
+    <div class="login-card">
+      <img class="login-logo" src="img/logo.png" alt="Mercearia Miranda">
+      <div class="login-title">Painel Admin</div>
+      <p class="login-sub">Acesso restrito ao dono da mercearia</p>
+      <input class="login-input" type="password" id="login-password" placeholder="Digite sua senha...">
+      <button class="login-btn" onclick="doLogin()">Entrar</button>
+      <div class="login-error" id="login-error"></div>
+      <p class="login-hint">
+        Senha padrão: <strong>miranda2024</strong><br>
+        Altere em <code>js/admin.js</code> antes de publicar.
+      </p>
+    </div>
+  </div>
+
+  <!-- APP -->
+  <div id="app" class="app">
+
+    <header>
+      <div class="header-left">
+        <img class="header-logo" src="img/logo.png" alt="Mercearia Miranda">
+        <span class="header-title">Painel Admin</span>
+      </div>
+      <div class="header-right">
+        <button class="logout-btn" onclick="doLogout()">Sair</button>
+      </div>
+    </header>
+
+    <div class="stats-bar">
+      <div class="stat-card">
+        <div class="stat-label">Total de produtos</div>
+        <div class="stat-value" id="stat-total">0</div>
+        <div class="stat-sub">no catálogo</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Disponíveis</div>
+        <div class="stat-value" id="stat-avail">0</div>
+        <div class="stat-sub">visíveis no site</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Marcas</div>
+        <div class="stat-value" id="stat-brands">0</div>
+        <div class="stat-sub">diferentes</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Preço médio</div>
+        <div class="stat-value" id="stat-avg">R$ 0</div>
+        <div class="stat-sub">por unidade</div>
+      </div>
+    </div>
+
+    <div class="main">
+
+      <!-- FIREBASE BANNER -->
+      <div class="config-banner hidden" id="config-banner">
+        <div class="config-icon">🔥</div>
+        <div class="config-text">
+          <div class="config-title">Firebase não configurado</div>
+          <div class="config-desc">
+            Sem o Firebase, as alterações só ficam salvas neste navegador.
+            Configure para sincronizar com o site dos clientes em tempo real.
+          </div>
+          <button class="config-btn" onclick="openSetup()">Configurar Firebase →</button>
+        </div>
+      </div>
+
+      <!-- TOOLBAR -->
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <div class="page-title">Cervejas</div>
+          <span class="product-count" id="prod-count">0 produtos</span>
+        </div>
+        <div class="toolbar-right">
+          <div class="search-box">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+            </svg>
+            <input type="text" placeholder="Buscar..." oninput="onSearch(event)">
+          </div>
+          <button class="add-btn" onclick="openAdd()">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path d="M12 5v14M5 12h14"/>
+            </svg>
+            Adicionar
+          </button>
+        </div>
+      </div>
+
+      <div class="filter-row" id="filter-row"></div>
+
+      <div id="loading" class="loading">
+        <div class="spinner"></div>
+        <span>Carregando produtos...</span>
+      </div>
+      <div class="product-list" id="product-list"></div>
+
+    </div>
+  </div>
+
+  <!-- ADD / EDIT MODAL -->
+  <div class="modal-overlay hidden" id="prod-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="modal-title">Adicionar Cerveja</h3>
+        <button class="close-btn" onclick="closeModal()">&#x2715;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group full">
+          <div class="img-upload" onclick="document.getElementById('f-img').click()">
+            <input type="file" id="f-img" accept="image/*" onchange="previewImg(this)">
+            <img id="img-preview" class="img-upload-preview hidden" src="" alt="preview">
+            <div id="img-placeholder">
+              <div style="font-size:32px;margin-bottom:8px">📷</div>
+              <div class="img-upload-text"><span>Clique para enviar</span> uma foto do produto</div>
+            </div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group full">
+            <label class="form-label">Nome do produto</label>
+            <input class="form-input" type="text" id="f-name" placeholder="Ex: Heineken Lata 350ml">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Marca</label>
+            <input class="form-input" type="text" id="f-brand" placeholder="Ex: Heineken">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Preço (R$)</label>
+            <input class="form-input" type="number" id="f-price" placeholder="7.90" step="0.01" min="0">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Unidade</label>
+            <input class="form-input" type="text" id="f-unit" placeholder="lata, garrafa, fardo...">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Emoji (sem foto)</label>
+            <input class="form-input" type="text" id="f-emoji" placeholder="🍺" maxlength="4">
+          </div>
+        </div>
+        <div class="avail-row">
+          <div>
+            <div class="avail-label">Disponível para venda</div>
+            <div class="avail-sub">Produtos indisponíveis ficam ocultos no site</div>
+          </div>
+          <label class="toggle" style="flex-shrink:0">
+            <input type="checkbox" id="f-available" checked>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="cancel-btn" onclick="closeModal()">Cancelar</button>
+        <button class="save-btn"   onclick="saveProduct()">Salvar produto</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FIREBASE SETUP MODAL -->
+  <div class="modal-overlay hidden" id="setup-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>🔥 Configurar Firebase</h3>
+        <button class="close-btn" onclick="closeSetup()">&#x2715;</button>
+      </div>
+      <div class="modal-body">
+        <div class="setup-step">
+          <span class="setup-step-num">1</span>
+          <span class="setup-step-text">
+            Acesse <a href="https://console.firebase.google.com" target="_blank">console.firebase.google.com</a>
+            e clique em <strong>Adicionar projeto</strong>. Nome sugerido: <code>mercearia-miranda</code>
+          </span>
+        </div>
+        <div class="setup-step">
+          <span class="setup-step-num">2</span>
+          <span class="setup-step-text">
+            Dentro do projeto, clique em <strong>Firestore Database</strong> →
+            <strong>Criar banco de dados</strong> → <strong>Modo de teste</strong> → <strong>Ativar</strong>
+          </span>
+        </div>
+        <div class="setup-step">
+          <span class="setup-step-num">3</span>
+          <span class="setup-step-text">
+            No menu lateral, clique em <strong>Configurações do projeto</strong> (engrenagem) →
+            role até <strong>Seus aplicativos</strong> → clique no ícone <strong>&lt;/&gt; Web</strong>
+            e copie as chaves abaixo
+          </span>
+        </div>
+        <div class="config-input-group">
+          <div class="form-group">
+            <label class="form-label config-label">API KEY</label>
+            <input class="form-input" id="cfg-apiKey" placeholder="AIzaSy...">
+          </div>
+          <div class="form-group">
+            <label class="form-label config-label">AUTH DOMAIN</label>
+            <input class="form-input" id="cfg-authDomain" placeholder="seu-projeto.firebaseapp.com">
+          </div>
+          <div class="form-group">
+            <label class="form-label config-label">PROJECT ID</label>
+            <input class="form-input" id="cfg-projectId" placeholder="mercearia-miranda">
+          </div>
+          <div class="form-group">
+            <label class="form-label config-label">STORAGE BUCKET</label>
+            <input class="form-input" id="cfg-storageBucket" placeholder="seu-projeto.appspot.com">
+          </div>
+          <div class="form-group">
+            <label class="form-label config-label">MESSAGING SENDER ID</label>
+            <input class="form-input" id="cfg-messagingSenderId" placeholder="123456789">
+          </div>
+          <div class="form-group">
+            <label class="form-label config-label">APP ID</label>
+            <input class="form-input" id="cfg-appId" placeholder="1:123...">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="cancel-btn" onclick="closeSetup()">Cancelar</button>
+        <button class="save-btn"   onclick="saveFirebaseConfig()">Salvar e conectar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/admin.js"></script>
+</body>
+</html>
