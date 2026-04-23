@@ -6,6 +6,18 @@ const FLASH_DISCOUNT = 0.10;         // 10% de desconto
 const FLASH_DAYS     = [5, 6];       // 5 = sexta-feira, 6 = sábado
 
 // ============================================================
+// FIREBASE — mesmas chaves do admin.js
+// ============================================================
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyCQmUzQrvf-A7BOaDWEBWAgfvQHayhEJ_4",
+  authDomain: "mercearia-miranda-e3874.firebaseapp.com",
+  projectId: "mercearia-miranda-e3874",
+  storageBucket: "mercearia-miranda-e3874.firebasestorage.app",
+  messagingSenderId: "623113957946",
+  appId: "1:623113957946:web:6e991a895a0fcae81f3b03"
+};
+
+// ============================================================
 // PRODUTOS — editados via painel admin ou Firebase
 // ============================================================
 const DEFAULT_BEERS = [
@@ -36,14 +48,11 @@ let isFirebaseReady = false;
 // FIREBASE — leitura em tempo real
 // ============================================================
 async function initFirebase() {
-  const saved = localStorage.getItem("mm_firebase_config");
-  if (!saved) return loadLocalBeers();
   try {
-    const cfg = JSON.parse(saved);
     const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
     const { getFirestore, collection, onSnapshot }
       = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-    const app = initializeApp(cfg);
+    const app = initializeApp(FIREBASE_CONFIG);
     const db  = getFirestore(app);
     isFirebaseReady = true;
     onSnapshot(collection(db, "cervejas"), (snap) => {
@@ -53,6 +62,9 @@ async function initFirebase() {
       BEERS.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
       renderFilters();
       renderBeers();
+    }, (err) => {
+      console.warn("Firebase erro:", err);
+      loadLocalBeers();
     });
   } catch (e) {
     console.warn("Firebase indisponível, usando localStorage:", e);

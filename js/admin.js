@@ -4,36 +4,26 @@
 const ADMIN_PASSWORD = "miranda2024"; // <- sua senha de acesso
 
 // ============================================================
-// FIREBASE — cole suas chaves após criar o projeto
+// FIREBASE — cole suas chaves aqui (sem aspas nos valores)
 // ============================================================
-let FIREBASE_CONFIG = {
+const FIREBASE_CONFIG = {
   apiKey: "AIzaSyCQmUzQrvf-A7BOaDWEBWAgfvQHayhEJ_4",
   authDomain: "mercearia-miranda-e3874.firebaseapp.com",
   projectId: "mercearia-miranda-e3874",
   storageBucket: "mercearia-miranda-e3874.firebasestorage.app",
   messagingSenderId: "623113957946",
   appId: "1:623113957946:web:6e991a895a0fcae81f3b03"
-}
+};
 
 let db = null;
 let isFirebaseReady = false;
 
-function loadFirebaseConfig() {
-  const saved = localStorage.getItem("mm_firebase_config");
-  if (saved) {
-    try { FIREBASE_CONFIG = JSON.parse(saved); return true; }
-    catch (e) { return false; }
-  }
-  return false;
-}
-
 async function initFirebase() {
-  if (!FIREBASE_CONFIG) return false;
   try {
     const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
-    const { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, onSnapshot, serverTimestamp }
+    const { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, serverTimestamp }
       = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-    window._fb = { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, onSnapshot, serverTimestamp };
+    window._fb = { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, serverTimestamp };
     const app = initializeApp(FIREBASE_CONFIG);
     db = getFirestore(app);
     isFirebaseReady = true;
@@ -99,18 +89,12 @@ const DEFAULT_BEERS = [
 // APP START
 // ============================================================
 async function startApp() {
-  const configLoaded = loadFirebaseConfig();
-  if (configLoaded) {
-    document.getElementById("config-banner").classList.add("hidden");
-    const ok = await initFirebase();
-    if (ok) {
-      listenProducts();
-    } else {
-      showToast("Erro ao conectar ao Firebase.", "error");
-      useLocalStorage();
-    }
+  document.getElementById("config-banner").classList.add("hidden");
+  const ok = await initFirebase();
+  if (ok) {
+    listenProducts();
   } else {
-    document.getElementById("config-banner").classList.remove("hidden");
+    showToast("Erro ao conectar ao Firebase. Verifique as chaves em js/admin.js", "error");
     useLocalStorage();
   }
 }
@@ -387,34 +371,7 @@ async function deleteProduct(id) {
   }
 }
 
-// ============================================================
-// FIREBASE SETUP MODAL
-// ============================================================
-function openSetup() {
-  document.getElementById("setup-modal").classList.remove("hidden");
-}
 
-function closeSetup() {
-  document.getElementById("setup-modal").classList.add("hidden");
-}
-
-function saveFirebaseConfig() {
-  const cfg = {
-    apiKey:            document.getElementById("cfg-apiKey").value.trim(),
-    authDomain:        document.getElementById("cfg-authDomain").value.trim(),
-    projectId:         document.getElementById("cfg-projectId").value.trim(),
-    storageBucket:     document.getElementById("cfg-storageBucket").value.trim(),
-    messagingSenderId: document.getElementById("cfg-messagingSenderId").value.trim(),
-    appId:             document.getElementById("cfg-appId").value.trim(),
-  };
-  if (!cfg.apiKey || !cfg.projectId) {
-    showToast("Preencha pelo menos API Key e Project ID.", "error");
-    return;
-  }
-  localStorage.setItem("mm_firebase_config", JSON.stringify(cfg));
-  showToast("Configuração salva! Recarregando...", "success");
-  setTimeout(() => location.reload(), 1200);
-}
 
 // ============================================================
 // UTILS
