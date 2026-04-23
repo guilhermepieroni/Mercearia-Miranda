@@ -6,7 +6,15 @@ const ADMIN_PASSWORD = "miranda2024"; // <- sua senha de acesso
 // ============================================================
 // FIREBASE — cole suas chaves após criar o projeto
 // ============================================================
-let FIREBASE_CONFIG = null;
+let FIREBASE_CONFIG = {
+  apiKey: "AIzaSyCQmUzQrvf-A7BOaDWEBWAgfvQHayhEJ_4",
+  authDomain: "mercearia-miranda-e3874.firebaseapp.com",
+  projectId: "mercearia-miranda-e3874",
+  storageBucket: "mercearia-miranda-e3874.firebasestorage.app",
+  messagingSenderId: "623113957946",
+  appId: "1:623113957946:web:6e991a895a0fcae81f3b03"
+}
+
 let db = null;
 let isFirebaseReady = false;
 
