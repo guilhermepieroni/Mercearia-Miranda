@@ -1,7 +1,7 @@
 // ============================================================
 // CONFIGURAÇÕES
 // ============================================================
-const WHATSAPP    = "5500000000000"; // <- número da mercearia: 55 + DDD + número
+const WHATSAPP    = "5534996350305"; // <- número da mercearia: 55 + DDD + número
 const FLASH_DISCOUNT = 0.10;         // 10% de desconto
 const FLASH_DAYS     = [5, 6];       // 5 = sexta-feira, 6 = sábado
 
