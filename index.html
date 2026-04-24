@@ -114,12 +114,13 @@
   <div class="overlay hidden" id="overlay" onclick="closeCart()"></div>
   <aside class="cart-drawer" id="cart-drawer">
     <div class="cart-header">
-      <h3>🍺 Meu Pedido</h3>
+      <h3>Meu Pedido</h3>
       <button class="close-btn" onclick="closeCart()">&#x2715;</button>
     </div>
     <div class="cart-items" id="cart-items"></div>
     <div class="cart-footer" id="cart-footer" style="display:none">
       <div class="cart-promo-info" id="cart-promo-info"></div>
+      <div class="cart-delivery-info" id="cart-delivery-info" style="font-size:12px;font-weight:700;margin-bottom:8px;min-height:16px;text-align:center;color:var(--gold)"></div>
       <div class="cart-total">
         <span>Total do pedido</span>
         <strong id="cart-total-val">R$ 0,00</strong>
@@ -132,7 +133,7 @@
       </button>
     </div>
     <div class="cart-empty" id="cart-empty">
-      <div class="cart-empty-icon">🍺</div>
+      <div class="cart-empty-icon">&#x1F37A;</div>
       <p>Nenhuma cerveja ainda</p>
     </div>
   </aside>
@@ -145,15 +146,24 @@
         <button class="close-btn" onclick="closeCheckout()">&#x2715;</button>
       </div>
       <div class="modal-body">
-        <label>Nome completo    <input type="text" id="f-nome" placeholder="João Silva"></label>
-        <label>Telefone         <input type="tel"  id="f-tel"  placeholder="(34) 99999-0000"></label>
-        <label>Endereço         <input type="text" id="f-end"  placeholder="Rua das Flores, 123"></label>
-        <label>Observações      <textarea id="f-obs" placeholder="Deixar com vizinho, não tem troco..." rows="2"></textarea></label>
+        <label>Nome completo <input type="text" id="f-nome" placeholder="João Silva"></label>
+        <label>Telefone      <input type="tel"  id="f-tel"  placeholder="(34) 99999-0000"></label>
+        <label>Endereço      <input type="text" id="f-end"  placeholder="Rua das Flores, 123"></label>
+        <label>Observações   <textarea id="f-obs" placeholder="Deixar com vizinho, não tem troco..." rows="2"></textarea></label>
         <div>
           <span class="delivery-label">Como prefere receber?</span>
           <div class="delivery-btns">
-            <button class="delivery-opt active" data-val="entrega"  onclick="selectDelivery(this)">🛵 Entrega</button>
-            <button class="delivery-opt"        data-val="retirada" onclick="selectDelivery(this)">🏪 Retirada</button>
+            <button class="delivery-opt active" data-val="entrega"  onclick="selectDelivery(this)">Entrega</button>
+            <button class="delivery-opt"        data-val="retirada" onclick="selectDelivery(this)">Retirada</button>
+          </div>
+        </div>
+        <div>
+          <span class="delivery-label">Forma de pagamento</span>
+          <div class="payment-btns">
+            <button class="payment-opt active" data-val="Dinheiro"       onclick="selectPayment(this)">Dinheiro</button>
+            <button class="payment-opt"        data-val="Pix"            onclick="selectPayment(this)">Pix</button>
+            <button class="payment-opt"        data-val="Cartao Debito"  onclick="selectPayment(this)">Debito</button>
+            <button class="payment-opt"        data-val="Cartao Credito" onclick="selectPayment(this)">Credito</button>
           </div>
         </div>
       </div>

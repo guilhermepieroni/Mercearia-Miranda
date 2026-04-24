@@ -28,5 +28,5 @@ const DEFAULT_PRODUCTS = [
 
 const DEFAULT_CONFIG = {
   name:      "Mercearia Miranda",
-  whatsapp:  "5500000000000" // <- altere: 55 + DDD + número (ex: 5534999990000)
+  whatsapp:  "553438142854" // <- altere: 55 + DDD + número (ex: 5534999990000)
 };

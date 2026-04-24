@@ -199,13 +199,24 @@ function renderBeers() {
 }
 
 // ============================================================
+// TAXA DE ENTREGA
+// ============================================================
+const DELIVERY_FREE_ABOVE = 80.00; // frete grátis acima deste valor
+const DELIVERY_FEE        = 7.00;  // taxa cobrada abaixo do valor acima
+
+function getDeliveryFee(subtotal) {
+  if (deliveryType !== "entrega") return 0;
+  return subtotal >= DELIVERY_FREE_ABOVE ? 0 : DELIVERY_FEE;
+}
+
+// ============================================================
 // CART
 // ============================================================
 function addToCart(id) {
   cart[id] = (cart[id] || 0) + 1;
   updateCartUI();
   updateBeerAction(id);
-  showToast("🍺 Adicionado!");
+  showToast("Adicionado!");
 }
 
 function removeFromCart(id) {
@@ -237,7 +248,11 @@ function calcTotal() {
     base  += b.price * cart[id];
     final += getEffectivePrice(b) * cart[id];
   });
-  return { base, discount: +(base - final).toFixed(2), final: +final.toFixed(2) };
+  const discount     = +(base - final).toFixed(2);
+  const subtotal     = +final.toFixed(2);
+  const deliveryFee  = getDeliveryFee(subtotal);
+  const total        = +(subtotal + deliveryFee).toFixed(2);
+  return { base, discount, subtotal, deliveryFee, total };
 }
 
 function totalQty() {
@@ -276,13 +291,13 @@ function renderCartItems() {
     const sub = eff * qty;
     const thumb = b.img
       ? `<img src="${b.img}" alt="${b.name}">`
-      : (b.emoji || "🍺");
+      : (b.emoji || "");
     return `
       <div class="cart-item">
         <div class="cart-item-thumb">${thumb}</div>
         <div class="cart-item-info">
           <div class="cart-item-name">${b.name}</div>
-          <div class="cart-item-price">R$ ${fmt(eff)} × ${qty} = R$ ${fmt(sub)}</div>
+          <div class="cart-item-price">R$ ${fmt(eff)} x ${qty} = R$ ${fmt(sub)}</div>
         </div>
         <div class="cqty-wrap">
           <button class="cqty-btn" onclick="removeFromCart('${id}')">&#8722;</button>
@@ -292,12 +307,28 @@ function renderCartItems() {
       </div>`;
   }).join("");
 
-  const { discount, final } = calcTotal();
+  const { discount, subtotal, deliveryFee, total } = calcTotal();
+
+  // Linha de desconto relâmpago
   const promoEl = document.getElementById("cart-promo-info");
   promoEl.textContent = (isFlashActive() && discount > 0)
-    ? `⚡ Desconto relâmpago aplicado: -R$ ${fmt(discount)}`
+    ? `Desconto relampago aplicado: -R$ ${fmt(discount)}`
     : "";
-  document.getElementById("cart-total-val").textContent = "R$ " + fmt(final);
+
+  // Linha de entrega
+  const deliveryEl = document.getElementById("cart-delivery-info");
+  if (deliveryEl) {
+    if (deliveryType === "entrega") {
+      deliveryEl.textContent = deliveryFee === 0
+        ? `Entrega: GRATIS (acima de R$ ${fmt(DELIVERY_FREE_ABOVE)})`
+        : `Taxa de entrega: R$ ${fmt(deliveryFee)} | Falta R$ ${fmt(DELIVERY_FREE_ABOVE - subtotal)} para frete gratis`;
+      deliveryEl.style.color = deliveryFee === 0 ? "var(--green)" : "var(--gold)";
+    } else {
+      deliveryEl.textContent = "";
+    }
+  }
+
+  document.getElementById("cart-total-val").textContent = "R$ " + fmt(total);
 }
 
 function openCart() {
@@ -320,47 +351,66 @@ function selectDelivery(btn) {
   deliveryType = btn.dataset.val;
   document.querySelectorAll(".delivery-opt").forEach(b => b.classList.remove("active"));
   btn.classList.add("active");
+  renderCartItems(); // atualiza taxa ao mudar tipo
+}
+function selectPayment(btn) {
+  document.querySelectorAll(".payment-opt").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
 }
 
 // ============================================================
-// WHATSAPP
+// WHATSAPP — sem emojis (compativel com iOS)
 // ============================================================
 function sendWhatsApp() {
-  const nome = document.getElementById("f-nome").value.trim();
-  const tel  = document.getElementById("f-tel").value.trim();
-  const end  = document.getElementById("f-end").value.trim();
-  const obs  = document.getElementById("f-obs").value.trim();
+  const nome     = document.getElementById("f-nome").value.trim();
+  const tel      = document.getElementById("f-tel").value.trim();
+  const end      = document.getElementById("f-end").value.trim();
+  const obs      = document.getElementById("f-obs").value.trim();
+  const pagBtn   = document.querySelector(".payment-opt.active");
+  const pagamento = pagBtn ? pagBtn.dataset.val : "Nao informado";
+
   if (!nome) { showToast("Por favor, informe seu nome."); return; }
 
-  const { discount, final } = calcTotal();
+  const { discount, subtotal, deliveryFee, total } = calcTotal();
   const flash = isFlashActive();
-  let msg = "🍺 *Pedido de Cervejas — Mercearia Miranda*\n";
-  if (flash) msg += "⚡ *PROMOÇÃO RELÂMPAGO — 10% OFF*\n";
-  msg += `\n👤 *Cliente:* ${nome}\n`;
-  if (tel) msg += `📱 *Telefone:* ${tel}\n`;
+
+  let msg = "*Pedido de Cervejas - Mercearia Miranda*\n";
+  if (flash) msg += "*PROMOCAO RELAMPAGO - 10% OFF*\n";
+  msg += "\n";
+  msg += `*Cliente:* ${nome}\n`;
+  if (tel) msg += `*Telefone:* ${tel}\n`;
+
   if (deliveryType === "entrega") {
-    msg += `🛵 *Tipo:* Entrega\n`;
-    if (end) msg += `📍 *Endereço:* ${end}\n`;
+    msg += `*Tipo:* Entrega\n`;
+    if (end) msg += `*Endereco:* ${end}\n`;
+    msg += deliveryFee === 0
+      ? `*Taxa de entrega:* GRATIS\n`
+      : `*Taxa de entrega:* R$ ${fmt(deliveryFee)}\n`;
   } else {
-    msg += `🏪 *Tipo:* Retirada na loja\n`;
+    msg += `*Tipo:* Retirada na loja\n`;
   }
-  msg += "\n🍺 *Itens:*\n";
+
+  msg += `*Pagamento:* ${pagamento}\n`;
+  msg += "\n*Itens:*\n";
+
   Object.keys(cart).forEach(id => {
     const b = BEERS.find(x => x.id === id);
     if (!b) return;
     const eff = getEffectivePrice(b);
-    msg += `• ${b.name} × ${cart[id]} — R$ ${fmt(eff * cart[id])}\n`;
+    msg += `- ${b.name} x ${cart[id]} = R$ ${fmt(eff * cart[id])}\n`;
   });
-  if (flash && discount > 0) msg += `\n⚡ *Desconto relâmpago (10%):* -R$ ${fmt(discount)}\n`;
-  msg += `\n💰 *Total: R$ ${fmt(final)}*`;
-  if (obs) msg += `\n\n📝 *Obs:* ${obs}`;
+
+  if (flash && discount > 0) msg += `\n*Desconto relampago (10%):* -R$ ${fmt(discount)}\n`;
+  if (deliveryFee > 0)       msg += `*Taxa de entrega:* R$ ${fmt(deliveryFee)}\n`;
+  msg += `\n*Total: R$ ${fmt(total)}*`;
+  if (obs) msg += `\n\n*Obs:* ${obs}`;
 
   window.open(`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`, "_blank");
   cart = {};
   updateCartUI();
   renderBeers();
   closeCheckout();
-  showToast("Pedido enviado! 🎉");
+  showToast("Pedido enviado!");
 }
 
 // ============================================================
