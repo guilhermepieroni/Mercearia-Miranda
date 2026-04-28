@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Combos — Mercearia Miranda</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/cervejas.css">
+  <style>
+    .combos-hero {
+      background: linear-gradient(135deg, #0d0d0d 0%, #1a1008 50%, #0d0d0d 100%);
+      padding: 60px 20px 48px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .combos-hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% 80%, rgba(245,166,35,0.12) 0%, transparent 65%);
+    }
+    .combos-hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(245,166,35,0.12);
+      border: 1px solid rgba(245,166,35,0.3);
+      color: var(--gold);
+      font-size: 12px;
+      font-weight: 700;
+      padding: 5px 16px;
+      border-radius: 20px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+    .combos-hero-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(42px, 8vw, 80px);
+      color: #fff;
+      line-height: .95;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .combos-hero-title span { color: var(--gold); }
+    .combos-hero-sub {
+      font-size: 16px;
+      color: var(--text-muted);
+      max-width: 480px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    .combos-section { padding: 48px 20px 80px; }
+    .combos-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 20px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .combo-card {
+      background: var(--dark3);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform .2s, box-shadow .2s, border-color .2s;
+    }
+    .combo-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 16px 40px rgba(245,166,35,0.15);
+      border-color: rgba(245,166,35,0.3);
+    }
+    .combo-img-wrap { position: relative; overflow: hidden; }
+    .combo-img { width: 100%; display: block; border-radius: 0; }
+    .combo-tag {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: rgba(13,13,13,0.85);
+      color: var(--gold);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 10px;
+      border: 1px solid rgba(245,166,35,0.3);
+      backdrop-filter: blur(6px);
+      letter-spacing: .05em;
+    }
+    .combo-body { padding: 18px 20px 20px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+    .combo-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 26px;
+      color: var(--text);
+      letter-spacing: .03em;
+    }
+    .combo-desc { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+    .combo-items {
+      list-style: none;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 2px 0;
+    }
+    .combo-items li {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 8px;
+      padding: 3px 10px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .combo-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: auto;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+    }
+    .combo-price {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 30px;
+      color: var(--gold);
+      letter-spacing: .02em;
+      line-height: 1;
+    }
+    .combo-savings { font-size: 12px; font-weight: 700; margin-top: 3px; }
+    .combo-btn {
+      border: none;
+      border-radius: 20px;
+      padding: 10px 20px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: 'Barlow', sans-serif;
+      color: #0d0d0d;
+      transition: opacity .15s, transform .15s;
+    }
+    .combo-btn:hover { opacity: .88; transform: scale(1.04); }
+
+    /* MODAL */
+    .combo-modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.75);
+      z-index: 500;
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px;
+      animation: fadeIn .2s ease;
+    }
+    .combo-modal {
+      background: var(--dark3);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      width: 100%; max-width: 420px;
+      padding: 28px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+      animation: slideUp .22s ease;
+    }
+    .combo-modal h3 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 24px;
+      color: var(--gold);
+      margin-bottom: 6px;
+    }
+    .combo-modal p { font-size: 14px; color: var(--text-muted); margin-bottom: 18px; line-height: 1.5; }
+    .combo-modal label {
+      display: flex; flex-direction: column; gap: 5px;
+      font-size: 13px; font-weight: 600; color: var(--text);
+      margin-bottom: 12px;
+    }
+    .combo-modal input, .combo-modal textarea {
+      background: var(--dark4);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 13px;
+      font-size: 14px;
+      font-family: 'Barlow', sans-serif;
+      color: var(--text);
+      outline: none;
+      transition: border-color .15s;
+    }
+    .combo-modal input:focus, .combo-modal textarea:focus { border-color: var(--gold); }
+    .combo-modal-btns { display: flex; gap: 10px; margin-top: 4px; }
+    .combo-cancel {
+      flex: 0 0 auto;
+      background: var(--dark4);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 18px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: 'Barlow', sans-serif;
+    }
+    .combo-send {
+      flex: 1;
+      background: #25d366;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 12px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: 'Barlow', sans-serif;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-muted);
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      padding: 10px 0 0 20px;
+      transition: color .15s;
+    }
+    .back-btn:hover { color: var(--gold); }
+
+    @media (max-width: 640px) {
+      .combos-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner container">
+    <img class="nav-logo" src="img/logo.png" alt="Mercearia Miranda">
+    <div class="nav-right">
+      <a href="index.html" style="color:rgba(255,255,255,0.7);font-size:13px;font-weight:700;text-decoration:none">← Cervejas</a>
+    </div>
+  </div>
+</nav>
+
+<div class="combos-hero">
+  <div class="combos-hero-tag">🎁 Ofertas especiais</div>
+  <h1 class="combos-hero-title">Combos que<br><span>valem a pena</span></h1>
+  <p class="combos-hero-sub">Montamos os melhores kits pra você economizar e aproveitar mais. Peça pelo WhatsApp com um clique.</p>
+</div>
+
+<section class="combos-section">
+  <div class="combos-grid" id="combos-grid">
+    <div style="grid-column:1/-1;text-align:center;padding:48px;color:rgba(255,255,255,0.4)">
+      <div style="font-size:36px;margin-bottom:12px">⏳</div>
+      <div>Carregando combos...</div>
+    </div>
+  </div>
+</section>
+      <div class="combo-card">
+        <div class="combo-img-wrap">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NDAgMzIwIiB3aWR0aD0iNjQwIiBoZWlnaHQ9IjMyMCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImJnY29tYm8xIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3R5bGU9InN0b3AtY29sb3I6IzBkMGQwZCIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjYwJSIgc3R5bGU9InN0b3AtY29sb3I6IzFhMTAwOCIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiMwZDBkMGQiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImFjY2VudGNvbWJvMSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIxMDAlIiB5Mj0iMCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdHlsZT0ic3RvcC1jb2xvcjojZjVhNjIzIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3R5bGU9InN0b3AtY29sb3I6I2U4ODIwYyIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICAgIDxyYWRpYWxHcmFkaWVudCBpZD0iZ2xvd2NvbWJvMSIgY3g9IjYwJSIgY3k9IjUwJSIgcj0iNTAlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3R5bGU9InN0b3AtY29sb3I6I2Y1YTYyMztzdG9wLW9wYWNpdHk6MC4xOCIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiNmNWE2MjM7c3RvcC1vcGFjaXR5OjAiLz4KICAgIDwvcmFkaWFsR3JhZGllbnQ+CiAgICA8ZmlsdGVyIGlkPSJibHVyY29tYm8xIj4KICAgICAgPGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iMzIiLz4KICAgIDwvZmlsdGVyPgogICAgPGNsaXBQYXRoIGlkPSJjbGlwY29tYm8xIj4KICAgICAgPHJlY3Qgd2lkdGg9IjY0MCIgaGVpZ2h0PSIzMjAiIHJ4PSIyMCIvPgogICAgPC9jbGlwUGF0aD4KICA8L2RlZnM+CgogIDwhLS0gQmFja2dyb3VuZCAtLT4KICA8cmVjdCB3aWR0aD0iNjQwIiBoZWlnaHQ9IjMyMCIgcng9IjIwIiBmaWxsPSJ1cmwoI2JnY29tYm8xKSIvPgogIDxyZWN0IHdpZHRoPSI2NDAiIGhlaWdodD0iMzIwIiByeD0iMjAiIGZpbGw9InVybCgjZ2xvd2NvbWJvMSkiLz4KICA8Y2xpcFBhdGggaWQ9ImNsaXBjb21ibzEiPjxyZWN0IHdpZHRoPSI2NDAiIGhlaWdodD0iMzIwIiByeD0iMjAiLz48L2NsaXBQYXRoPgoKICA8IS0tIERlY29yYXRpdmUgY2lyY2xlcyAtLT4KICA8Y2lyY2xlIGN4PSI1NjAiIGN5PSI0MCIgcj0iMTIwIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDI1KSIgY2xpcC1wYXRoPSJ1cmwoI2NsaXBjb21ibzEpIi8+CiAgPGNpcmNsZSBjeD0iODAiIGN5PSIyODAiIHI9IjkwIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDIpIiBjbGlwLXBhdGg9InVybCgjY2xpcGNvbWJvMSkiLz4KCiAgPCEtLSBCb3JkZXIgLS0+CiAgPHJlY3QgeD0iMSIgeT0iMSIgd2lkdGg9IjYzOCIgaGVpZ2h0PSIzMTgiIHJ4PSIxOSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDgpIiBzdHJva2Utd2lkdGg9IjEuNSIvPgoKICA8IS0tIFRvcCBhY2NlbnQgbGluZSAtLT4KICA8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iNjQwIiBoZWlnaHQ9IjQiIHJ4PSIyIiBmaWxsPSJ1cmwoI2FjY2VudGNvbWJvMSkiLz4KCiAgPCEtLSBUYWcgcGlsbCAtLT4KICA8cmVjdCB4PSIyNCIgeT0iMjIiIHdpZHRoPSIxNTAiIGhlaWdodD0iMjYiIHJ4PSIxMyIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjA4KSIgc3Ryb2tlPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMTIpIiBzdHJva2Utd2lkdGg9IjEiLz4KICA8dGV4dCB4PSI5OSIgeT0iMzkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc2l6ZT0iMTEiIGZpbGw9IiNmNWE2MjMiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC13ZWlnaHQ9IjcwMCIgbGV0dGVyLXNwYWNpbmc9IjAuNSI+TyBGQVZPUklUTyBETyBGSU5ERTwvdGV4dD4KCiAgPCEtLSBUaXRsZSAtLT4KICA8dGV4dCB4PSIyNCIgeT0iODIiIGZvbnQtc2l6ZT0iMzYiIGZpbGw9IndoaXRlIiBmb250LWZhbWlseT0iQXJpYWwgQmxhY2ssIEFyaWFsIiBmb250LXdlaWdodD0iOTAwIiBsZXR0ZXItc3BhY2luZz0iLTAuNSI+S0lUIFJBUVVFVEU8L3RleHQ+CgogIDwhLS0gRGVzYyAtLT4KICA8dGV4dCB4PSIyNCIgeT0iMTA4IiBmb250LXNpemU9IjEzIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuNTUpIiBmb250LWZhbWlseT0iQXJpYWwiPlNrb2wgTGF0YSAzNTBtbCB4MTIgKyBSdWZ1cyBPbmR1bGFkbyArIERvcml0b3MgTmFjaG88L3RleHQ+CgogIDwhLS0gRGl2aWRlciAtLT4KICA8bGluZSB4MT0iMjQiIHkxPSIxMjQiIHgyPSIyMjAiIHkyPSIxMjQiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjEpIiBzdHJva2Utd2lkdGg9IjEiLz4KCiAgPCEtLSBJdGVtcyBhcmVhIC0tPgogIAogICAgICAgIDxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDE1MCwxODApIj4KICAgICAgICAgIDxjaXJjbGUgcj0iNjIiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wNykiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjEyKSIgc3Ryb2tlLXdpZHRoPSIxIi8+CiAgICAgICAgICA8Y2lyY2xlIHI9IjU0IiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDQpIi8+CiAgICAgICAgICA8dGV4dCB4PSIwIiB5PSIxMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSIzOCI+8J+NujwvdGV4dD4KICAgICAgICAgIDx0ZXh0IHg9IjAiIHk9IjgwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjEwIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuNikiIGZvbnQtZmFtaWx5PSJBcmlhbCI+U2tvbCBGYXJkbyAxMnVuPC90ZXh0PgogICAgICAgIDwvZz4KICAgICAgICA8ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSgzMDAsMTYwKSI+CiAgICAgICAgICA8Y2lyY2xlIHI9IjU0IiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDcpIiBzdHJva2U9InJnYmEoMjU1LDI1NSwyNTUsMC4xMikiIHN0cm9rZS13aWR0aD0iMSIvPgogICAgICAgICAgPGNpcmNsZSByPSI0NiIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjA0KSIvPgogICAgICAgICAgPHRleHQgeD0iMCIgeT0iMTAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc2l6ZT0iMzMiPvCfpZQ8L3RleHQ+CiAgICAgICAgICA8dGV4dCB4PSIwIiB5PSI3MiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSIxMCIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjYpIiBmb250LWZhbWlseT0iQXJpYWwiPlJ1ZnVzIE9uZHVsYWRvPC90ZXh0PgogICAgICAgIDwvZz4KICAgICAgICA8ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg0NTAsMTgwKSI+CiAgICAgICAgICA8Y2lyY2xlIHI9IjU0IiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDcpIiBzdHJva2U9InJnYmEoMjU1LDI1NSwyNTUsMC4xMikiIHN0cm9rZS13aWR0aD0iMSIvPgogICAgICAgICAgPGNpcmNsZSByPSI0NiIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjA0KSIvPgogICAgICAgICAgPHRleHQgeD0iMCIgeT0iMTAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc2l6ZT0iMzMiPvCfjK48L3RleHQ+CiAgICAgICAgICA8dGV4dCB4PSIwIiB5PSI3MiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSIxMCIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjYpIiBmb250LWZhbWlseT0iQXJpYWwiPkRvcml0b3MgTmFjaG88L3RleHQ+CiAgICAgICAgPC9nPgoKICA8IS0tIEJvdHRvbSBiYXIgLS0+CiAgPHJlY3QgeD0iMCIgeT0iMjY4IiB3aWR0aD0iNjQwIiBoZWlnaHQ9IjUyIiByeD0iMCIgZmlsbD0icmdiYSgwLDAsMCwwLjM1KSIgY2xpcC1wYXRoPSJ1cmwoI2NsaXBjb21ibzEpIi8+CiAgPHJlY3QgeD0iMCIgeT0iMjY4IiB3aWR0aD0iNjQwIiBoZWlnaHQ9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wNikiLz4KCiAgPCEtLSBQcmljZSAtLT4KICA8dGV4dCB4PSIyNCIgeT0iMzAyIiBmb250LXNpemU9IjI4IiBmaWxsPSJ1cmwoI2FjY2VudGNvbWJvMSkiIGZvbnQtZmFtaWx5PSJBcmlhbCBCbGFjaywgQXJpYWwiIGZvbnQtd2VpZ2h0PSI5MDAiPlIkIDc5LDkwPC90ZXh0PgoKICA8IS0tIFNhdmluZ3MgYmFkZ2UgLS0+CiAgPHJlY3QgeD0iMTMwIiB5PSIyODAiIHdpZHRoPSIxNTAiIGhlaWdodD0iMjYiIHJ4PSIxMyIgZmlsbD0iI2Y1YTYyMyIgb3BhY2l0eT0iMC4xOCIvPgogIDxyZWN0IHg9IjEzMCIgeT0iMjgwIiB3aWR0aD0iMTUwIiBoZWlnaHQ9IjI2IiByeD0iMTMiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y1YTYyMyIgc3Ryb2tlLXdpZHRoPSIxIiBvcGFjaXR5PSIwLjQiLz4KICA8dGV4dCB4PSIyMDUiIHk9IjI5NyIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSIxMSIgZmlsbD0iI2Y1YTYyMyIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXdlaWdodD0iNzAwIj5FY29ub21pemUgUiQgMTIsMDA8L3RleHQ+CgogIDwhLS0gQ1RBIC0tPgogIDxyZWN0IHg9IjQ5MCIgeT0iMjc0IiB3aWR0aD0iMTMwIiBoZWlnaHQ9IjM2IiByeD0iMTgiIGZpbGw9InVybCgjYWNjZW50Y29tYm8xKSIvPgogIDx0ZXh0IHg9IjU1NSIgeT0iMjk2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjEzIiBmaWxsPSIjMGQwZDBkIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtd2VpZ2h0PSI3MDAiPlBFRElSIEFHT1JBPC90ZXh0Pgo8L3N2Zz4=" alt="Kit Raquete" class="combo-img">
+          <div class="combo-tag">O favorito do finde</div>
+        </div>
+        <div class="combo-body">
+          <h3 class="combo-name">Kit Raquete</h3>
+          <p class="combo-desc">Skol Lata 350ml x12 + Rufus Ondulado + Doritos Nacho</p>
+          <ul class="combo-items"><li>Skol Lata 350ml x12</li><li>Rufus Ondulado</li><li>Doritos Nacho</li></ul>
+          <div class="combo-footer">
+            <div>
+              <div class="combo-price">R$ 79,90</div>
+              <div class="combo-savings" style="color:#f5a623">Economize R$ 12,00</div>
+            </div>
+            <button class="combo-btn" style="background:#f5a623" onclick="pedirCombo('Kit Raquete', 'Skol Lata 350ml x12 + Rufus Ondulado + Doritos Nacho', '79,90')">
+              Pedir agora
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="combo-card">
+        <div class="combo-img-wrap">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NDAgMzIwIiB3aWR0aD0iNjQwIiBoZWlnaHQ9IjMyMCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImJnY29tYm8yIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3R5bGU9InN0b3AtY29sb3I6IzBkMGQwZCIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjYwJSIgc3R5bGU9InN0b3AtY29sb3I6IzFhMTAwOCIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiMwZDBkMGQiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImFjY2VudGNvbWJvMiIgeDE9IjAlIiB5MT0iMCUiIHgyPSIxMDAlIiB5Mj0iMCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdHlsZT0ic3RvcC1jb2xvcjojM2I4MmY2Ii8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3R5bGU9InN0b3AtY29sb3I6IzFkNGVkOCIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICAgIDxyYWRpYWxHcmFkaWVudCBpZD0iZ2xvd2NvbWJvMiIgY3g9IjYwJSIgY3k9IjUwJSIgcj0iNTAlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3R5bGU9InN0b3AtY29sb3I6IzNiODJmNjtzdG9wLW9wYWNpdHk6MC4xOCIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiMzYjgyZjY7c3RvcC1vcGFjaXR5OjAiLz4KICAgIDwvcmFkaWFsR3JhZGllbnQ+CiAgICA8ZmlsdGVyIGlkPSJibHVyY29tYm8yIj4KICAgICAgPGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iMzIiLz4KICAgIDwvZmlsdGVyPgogICAgPGNsaXBQYXRoIGlkPSJjbGlwY29tYm8yIj4KICAgICAgPHJlY3Qgd2lkdGg9IjY0MCIgaGVpZ2h0PSIzMjAiIHJ4PSIyMCIvPgogICAgPC9jbGlwUGF0aD4KICA8L2RlZnM+CgogIDwhLS0gQmFja2dyb3VuZCAtLT4KICA8cmVjdCB3aWR0aD0iNjQwIiBoZWlnaHQ9IjMyMCIgcng9IjIwIiBmaWxsPSJ1cmwoI2JnY29tYm8yKSIvPgogIDxyZWN0IHdpZHRoPSI2NDAiIGhlaWdodD0iMzIwIiByeD0iMjAiIGZpbGw9InVybCgjZ2xvd2NvbWJvMikiLz4KICA8Y2xpcFBhdGggaWQ9ImNsaXBjb21ibzIiPjxyZWN0IHdpZHRoPSI2NDAiIGhlaWdodD0iMzIwIiByeD0iMjAiLz48L2NsaXBQYXRoPgoKICA8IS0tIERlY29yYXRpdmUgY2lyY2xlcyAtLT4KICA8Y2lyY2xlIGN4PSI1NjAiIGN5PSI0MCIgcj0iMTIwIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDI1KSIgY2xpcC1wYXRoPSJ1cmwoI2NsaXBjb21ibzIpIi8+CiAgPGNpcmNsZSBjeD0iODAiIGN5PSIyODAiIHI9IjkwIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDIpIiBjbGlwLXBhdGg9InVybCgjY2xpcGNvbWJvMikiLz4KCiAgPCEtLSBCb3JkZXIgLS0+CiAgPHJlY3QgeD0iMSIgeT0iMSIgd2lkdGg9IjYzOCIgaGVpZ2h0PSIzMTgiIHJ4PSIxOSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDgpIiBzdHJva2Utd2lkdGg9IjEuNSIvPgoKICA8IS0tIFRvcCBhY2NlbnQgbGluZSAtLT4KICA8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iNjQwIiBoZWlnaHQ9IjQiIHJ4PSIyIiBmaWxsPSJ1cmwoI2FjY2VudGNvbWJvMikiLz4KCiAgPCEtLSBUYWcgcGlsbCAtLT4KICA8cmVjdCB4PSIyNCIgeT0iMjIiIHdpZHRoPSIxNTAiIGhlaWdodD0iMjYiIHJ4PSIxMyIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjA4KSIgc3Ryb2tlPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMTIpIiBzdHJva2Utd2lkdGg9IjEiLz4KICA8dGV4dCB4PSI5OSIgeT0iMzkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc2l6ZT0iMTEiIGZpbGw9IiMzYjgyZjYiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC13ZWlnaHQ9IjcwMCIgbGV0dGVyLXNwYWNpbmc9IjAuNSI+Q0zDgVNTSUNPIEJSQVNJTEVJUk88L3RleHQ+CgogIDwhLS0gVGl0bGUgLS0+CiAgPHRleHQgeD0iMjQiIHk9IjgyIiBmb250LXNpemU9IjM2IiBmaWxsPSJ3aGl0ZSIgZm9udC1mYW1pbHk9IkFyaWFsIEJsYWNrLCBBcmlhbCIgZm9udC13ZWlnaHQ9IjkwMCIgbGV0dGVyLXNwYWNpbmc9Ii0wLjUiPktJVCBCUkFITUE8L3RleHQ+CgogIDwhLS0gRGVzYyAtLT4KICA8dGV4dCB4PSIyNCIgeT0iMTA4IiBmb250LXNpemU9IjEzIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuNTUpIiBmb250LWZhbWlseT0iQXJpYWwiPkJyYWhtYSBMYXRhIDM1MG1sIHgxMiArIENvY2EtQ29sYSAyTDwvdGV4dD4KCiAgPCEtLSBEaXZpZGVyIC0tPgogIDxsaW5lIHgxPSIyNCIgeTE9IjEyNCIgeDI9IjIyMCIgeTI9IjEyNCIgc3Ryb2tlPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMSkiIHN0cm9rZS13aWR0aD0iMSIvPgoKICA8IS0tIEl0ZW1zIGFyZWEgLS0+CiAgCiAgICAgICAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjAwLDE4MCkiPgogICAgICAgICAgPGNpcmNsZSByPSI2MiIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjA3KSIgc3Ryb2tlPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMTIpIiBzdHJva2Utd2lkdGg9IjEiLz4KICAgICAgICAgIDxjaXJjbGUgcj0iNTQiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wNCkiLz4KICAgICAgICAgIDx0ZXh0IHg9IjAiIHk9IjEwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjM4Ij7wn426PC90ZXh0PgogICAgICAgICAgPHRleHQgeD0iMCIgeT0iODAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc2l6ZT0iMTAiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC42KSIgZm9udC1mYW1pbHk9IkFyaWFsIj5CcmFobWEgRmFyZG8gMTJ1PC90ZXh0PgogICAgICAgIDwvZz4KICAgICAgICA8ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg0MDAsMTgwKSI+CiAgICAgICAgICA8Y2lyY2xlIHI9IjU0IiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDcpIiBzdHJva2U9InJnYmEoMjU1LDI1NSwyNTUsMC4xMikiIHN0cm9rZS13aWR0aD0iMSIvPgogICAgICAgICAgPGNpcmNsZSByPSI0NiIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjA0KSIvPgogICAgICAgICAgPHRleHQgeD0iMCIgeT0iMTAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc2l6ZT0iMzMiPvCfpaQ8L3RleHQ+CiAgICAgICAgICA8dGV4dCB4PSIwIiB5PSI3MiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSIxMCIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjYpIiBmb250LWZhbWlseT0iQXJpYWwiPkNvY2EtQ29sYSAyTDwvdGV4dD4KICAgICAgICA8L2c+CgogIDwhLS0gQm90dG9tIGJhciAtLT4KICA8cmVjdCB4PSIwIiB5PSIyNjgiIHdpZHRoPSI2NDAiIGhlaWdodD0iNTIiIHJ4PSIwIiBmaWxsPSJyZ2JhKDAsMCwwLDAuMzUpIiBjbGlwLXBhdGg9InVybCgjY2xpcGNvbWJvMikiLz4KICA8cmVjdCB4PSIwIiB5PSIyNjgiIHdpZHRoPSI2NDAiIGhlaWdodD0iMSIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjA2KSIvPgoKICA8IS0tIFByaWNlIC0tPgogIDx0ZXh0IHg9IjI0IiB5PSIzMDIiIGZvbnQtc2l6ZT0iMjgiIGZpbGw9InVybCgjYWNjZW50Y29tYm8yKSIgZm9udC1mYW1pbHk9IkFyaWFsIEJsYWNrLCBBcmlhbCIgZm9udC13ZWlnaHQ9IjkwMCI+UiQgNjksOTA8L3RleHQ+CgogIDwhLS0gU2F2aW5ncyBiYWRnZSAtLT4KICA8cmVjdCB4PSIxMzAiIHk9IjI4MCIgd2lkdGg9IjE1MCIgaGVpZ2h0PSIyNiIgcng9IjEzIiBmaWxsPSIjM2I4MmY2IiBvcGFjaXR5PSIwLjE4Ii8+CiAgPHJlY3QgeD0iMTMwIiB5PSIyODAiIHdpZHRoPSIxNTAiIGhlaWdodD0iMjYiIHJ4PSIxMyIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjM2I4MmY2IiBzdHJva2Utd2lkdGg9IjEiIG9wYWNpdHk9IjAuNCIvPgogIDx0ZXh0IHg9IjIwNSIgeT0iMjk3IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjExIiBmaWxsPSIjM2I4MmY2IiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtd2VpZ2h0PSI3MDAiPkVjb25vbWl6ZSBSJCA4LDAwPC90ZXh0PgoKICA8IS0tIENUQSAtLT4KICA8cmVjdCB4PSI0OTAiIHk9IjI3NCIgd2lkdGg9IjEzMCIgaGVpZ2h0PSIzNiIgcng9IjE4IiBmaWxsPSJ1cmwoI2FjY2VudGNvbWJvMikiLz4KICA8dGV4dCB4PSI1NTUiIHk9IjI5NiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSIxMyIgZmlsbD0iIzBkMGQwZCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXdlaWdodD0iNzAwIj5QRURJUiBBR09SQTwvdGV4dD4KPC9zdmc+" alt="Kit Brahma" class="combo-img">
+          <div class="combo-tag">Clássico brasileiro</div>
+        </div>
+        <div class="combo-body">
+          <h3 class="combo-name">Kit Brahma</h3>
+          <p class="combo-desc">Brahma Lata 350ml x12 + Coca-Cola 2L</p>
+          <ul class="combo-items"><li>Brahma Lata 350ml x12</li><li>Coca-Cola 2L</li></ul>
+          <div class="combo-footer">
+            <div>
+              <div class="combo-price">R$ 69,90</div>
+              <div class="combo-savings" style="color:#3b82f6">Economize R$ 8,00</div>
+            </div>
+            <button class="combo-btn" style="background:#3b82f6" onclick="pedirCombo('Kit Brahma', 'Brahma Lata 350ml x12 + Coca-Cola 2L', '69,90')">
+              Pedir agora
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="combo-card">
+        <div class="combo-img-wrap">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NDAgMzIwIiB3aWR0aD0iNjQwIiBoZWlnaHQ9IjMyMCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImJnY29tYm8zIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3R5bGU9InN0b3AtY29sb3I6IzBkMGQwZCIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjYwJSIgc3R5bGU9InN0b3AtY29sb3I6IzFhMTAwOCIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiMwZDBkMGQiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImFjY2VudGNvbWJvMyIgeDE9IjAlIiB5MT0iMCUiIHgyPSIxMDAlIiB5Mj0iMCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdHlsZT0ic3RvcC1jb2xvcjojMjJjNTVlIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3R5bGU9InN0b3AtY29sb3I6IzE1ODAzZCIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICAgIDxyYWRpYWxHcmFkaWVudCBpZD0iZ2xvd2NvbWJvMyIgY3g9IjYwJSIgY3k9IjUwJSIgcj0iNTAlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3R5bGU9InN0b3AtY29sb3I6IzIyYzU1ZTtzdG9wLW9wYWNpdHk6MC4xOCIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiMyMmM1NWU7c3RvcC1vcGFjaXR5OjAiLz4KICAgIDwvcmFkaWFsR3JhZGllbnQ+CiAgICA8ZmlsdGVyIGlkPSJibHVyY29tYm8zIj4KICAgICAgPGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iMzIiLz4KICAgIDwvZmlsdGVyPgogICAgPGNsaXBQYXRoIGlkPSJjbGlwY29tYm8zIj4KICAgICAgPHJlY3Qgd2lkdGg9IjY0MCIgaGVpZ2h0PSIzMjAiIHJ4PSIyMCIvPgogICAgPC9jbGlwUGF0aD4KICA8L2RlZnM+CgogIDwhLS0gQmFja2dyb3VuZCAtLT4KICA8cmVjdCB3aWR0aD0iNjQwIiBoZWlnaHQ9IjMyMCIgcng9IjIwIiBmaWxsPSJ1cmwoI2JnY29tYm8zKSIvPgogIDxyZWN0IHdpZHRoPSI2NDAiIGhlaWdodD0iMzIwIiByeD0iMjAiIGZpbGw9InVybCgjZ2xvd2NvbWJvMykiLz4KICA8Y2xpcFBhdGggaWQ9ImNsaXBjb21ibzMiPjxyZWN0IHdpZHRoPSI2NDAiIGhlaWdodD0iMzIwIiByeD0iMjAiLz48L2NsaXBQYXRoPgoKICA8IS0tIERlY29yYXRpdmUgY2lyY2xlcyAtLT4KICA8Y2lyY2xlIGN4PSI1NjAiIGN5PSI0MCIgcj0iMTIwIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDI1KSIgY2xpcC1wYXRoPSJ1cmwoI2NsaXBjb21ibzMpIi8+CiAgPGNpcmNsZSBjeD0iODAiIGN5PSIyODAiIHI9IjkwIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDIpIiBjbGlwLXBhdGg9InVybCgjY2xpcGNvbWJvMykiLz4KCiAgPCEtLSBCb3JkZXIgLS0+CiAgPHJlY3QgeD0iMSIgeT0iMSIgd2lkdGg9IjYzOCIgaGVpZ2h0PSIzMTgiIHJ4PSIxOSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDgpIiBzdHJva2Utd2lkdGg9IjEuNSIvPgoKICA8IS0tIFRvcCBhY2NlbnQgbGluZSAtLT4KICA8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iNjQwIiBoZWlnaHQ9IjQiIHJ4PSIyIiBmaWxsPSJ1cmwoI2FjY2VudGNvbWJvMykiLz4KCiAgPCEtLSBUYWcgcGlsbCAtLT4KICA8cmVjdCB4PSIyNCIgeT0iMjIiIHdpZHRoPSIxNTAiIGhlaWdodD0iMjYiIHJ4PSIxMyIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjA4KSIgc3Ryb2tlPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMTIpIiBzdHJva2Utd2lkdGg9IjEiLz4KICA8dGV4dCB4PSI5OSIgeT0iMzkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc2l6ZT0iMTEiIGZpbGw9IiMyMmM1NWUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC13ZWlnaHQ9IjcwMCIgbGV0dGVyLXNwYWNpbmc9IjAuNSI+UEFSQSBJTVBSRVNTSU9OQVI8L3RleHQ+CgogIDwhLS0gVGl0bGUgLS0+CiAgPHRleHQgeD0iMjQiIHk9IjgyIiBmb250LXNpemU9IjM2IiBmaWxsPSJ3aGl0ZSIgZm9udC1mYW1pbHk9IkFyaWFsIEJsYWNrLCBBcmlhbCIgZm9udC13ZWlnaHQ9IjkwMCIgbGV0dGVyLXNwYWNpbmc9Ii0wLjUiPktJVCBQUkVNSVVNPC90ZXh0PgoKICA8IS0tIERlc2MgLS0+CiAgPHRleHQgeD0iMjQiIHk9IjEwOCIgZm9udC1zaXplPSIxMyIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjU1KSIgZm9udC1mYW1pbHk9IkFyaWFsIj5IZWluZWtlbiA2MDBtbCB4NiArIFdoaXNreSArIEdlbG8gU2Fib3IgKyBFbmVyZ8OpdGljbzwvdGV4dD4KCiAgPCEtLSBEaXZpZGVyIC0tPgogIDxsaW5lIHgxPSIyNCIgeTE9IjEyNCIgeDI9IjIyMCIgeTI9IjEyNCIgc3Ryb2tlPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMSkiIHN0cm9rZS13aWR0aD0iMSIvPgoKICA8IS0tIEl0ZW1zIGFyZWEgLS0+CiAgCiAgICAgICAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMTUwLDE4MCkiPgogICAgICAgICAgPGNpcmNsZSByPSI2MiIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjA3KSIgc3Ryb2tlPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMTIpIiBzdHJva2Utd2lkdGg9IjEiLz4KICAgICAgICAgIDxjaXJjbGUgcj0iNTQiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wNCkiLz4KICAgICAgICAgIDx0ZXh0IHg9IjAiIHk9IjEwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjM4Ij7wn426PC90ZXh0PgogICAgICAgICAgPHRleHQgeD0iMCIgeT0iODAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc2l6ZT0iMTAiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC42KSIgZm9udC1mYW1pbHk9IkFyaWFsIj5IZWluZWtlbiB4NjwvdGV4dD4KICAgICAgICA8L2c+CiAgICAgICAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjgwLDE1MCkiPgogICAgICAgICAgPGNpcmNsZSByPSI1NCIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjA3KSIgc3Ryb2tlPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMTIpIiBzdHJva2Utd2lkdGg9IjEiLz4KICAgICAgICAgIDxjaXJjbGUgcj0iNDYiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wNCkiLz4KICAgICAgICAgIDx0ZXh0IHg9IjAiIHk9IjEwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjMzIj7wn6WDPC90ZXh0PgogICAgICAgICAgPHRleHQgeD0iMCIgeT0iNzIiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc2l6ZT0iMTAiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC42KSIgZm9udC1mYW1pbHk9IkFyaWFsIj5XaGlza3kgMUw8L3RleHQ+CiAgICAgICAgPC9nPgogICAgICAgIDxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDM4MCwxNjApIj4KICAgICAgICAgIDxjaXJjbGUgcj0iNTQiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wNykiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjEyKSIgc3Ryb2tlLXdpZHRoPSIxIi8+CiAgICAgICAgICA8Y2lyY2xlIHI9IjQ2IiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDQpIi8+CiAgICAgICAgICA8dGV4dCB4PSIwIiB5PSIxMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSIzMyI+8J+nijwvdGV4dD4KICAgICAgICAgIDx0ZXh0IHg9IjAiIHk9IjcyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjEwIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuNikiIGZvbnQtZmFtaWx5PSJBcmlhbCI+R2VsbyBTYWJvcjwvdGV4dD4KICAgICAgICA8L2c+CiAgICAgICAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNDkwLDE4NSkiPgogICAgICAgICAgPGNpcmNsZSByPSI1NCIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjA3KSIgc3Ryb2tlPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMTIpIiBzdHJva2Utd2lkdGg9IjEiLz4KICAgICAgICAgIDxjaXJjbGUgcj0iNDYiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wNCkiLz4KICAgICAgICAgIDx0ZXh0IHg9IjAiIHk9IjEwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjMzIj7imqE8L3RleHQ+CiAgICAgICAgICA8dGV4dCB4PSIwIiB5PSI3MiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSIxMCIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjYpIiBmb250LWZhbWlseT0iQXJpYWwiPkVuZXJnw6l0aWNvPC90ZXh0PgogICAgICAgIDwvZz4KCiAgPCEtLSBCb3R0b20gYmFyIC0tPgogIDxyZWN0IHg9IjAiIHk9IjI2OCIgd2lkdGg9IjY0MCIgaGVpZ2h0PSI1MiIgcng9IjAiIGZpbGw9InJnYmEoMCwwLDAsMC4zNSkiIGNsaXAtcGF0aD0idXJsKCNjbGlwY29tYm8zKSIvPgogIDxyZWN0IHg9IjAiIHk9IjI2OCIgd2lkdGg9IjY0MCIgaGVpZ2h0PSIxIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDYpIi8+CgogIDwhLS0gUHJpY2UgLS0+CiAgPHRleHQgeD0iMjQiIHk9IjMwMiIgZm9udC1zaXplPSIyOCIgZmlsbD0idXJsKCNhY2NlbnRjb21ibzMpIiBmb250LWZhbWlseT0iQXJpYWwgQmxhY2ssIEFyaWFsIiBmb250LXdlaWdodD0iOTAwIj5SJCAxNDksOTA8L3RleHQ+CgogIDwhLS0gU2F2aW5ncyBiYWRnZSAtLT4KICA8cmVjdCB4PSIxMzAiIHk9IjI4MCIgd2lkdGg9IjE1MCIgaGVpZ2h0PSIyNiIgcng9IjEzIiBmaWxsPSIjMjJjNTVlIiBvcGFjaXR5PSIwLjE4Ii8+CiAgPHJlY3QgeD0iMTMwIiB5PSIyODAiIHdpZHRoPSIxNTAiIGhlaWdodD0iMjYiIHJ4PSIxMyIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMjJjNTVlIiBzdHJva2Utd2lkdGg9IjEiIG9wYWNpdHk9IjAuNCIvPgogIDx0ZXh0IHg9IjIwNSIgeT0iMjk3IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjExIiBmaWxsPSIjMjJjNTVlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtd2VpZ2h0PSI3MDAiPkVjb25vbWl6ZSBSJCAyNSwwMDwvdGV4dD4KCiAgPCEtLSBDVEEgLS0+CiAgPHJlY3QgeD0iNDkwIiB5PSIyNzQiIHdpZHRoPSIxMzAiIGhlaWdodD0iMzYiIHJ4PSIxOCIgZmlsbD0idXJsKCNhY2NlbnRjb21ibzMpIi8+CiAgPHRleHQgeD0iNTU1IiB5PSIyOTYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc2l6ZT0iMTMiIGZpbGw9IiMwZDBkMGQiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC13ZWlnaHQ9IjcwMCI+UEVESVIgQUdPUkE8L3RleHQ+Cjwvc3ZnPg==" alt="Kit Premium" class="combo-img">
+          <div class="combo-tag">Para impressionar</div>
+        </div>
+        <div class="combo-body">
+          <h3 class="combo-name">Kit Premium</h3>
+          <p class="combo-desc">Heineken 600ml x6 + Whisky + Gelo Sabor + Energético</p>
+          <ul class="combo-items"><li>Heineken 600ml x6</li><li>Whisky 1L</li><li>Gelo Sabor</li><li>Energético</li></ul>
+          <div class="combo-footer">
+            <div>
+              <div class="combo-price">R$ 149,90</div>
+              <div class="combo-savings" style="color:#22c55e">Economize R$ 25,00</div>
+            </div>
+            <button class="combo-btn" style="background:#22c55e" onclick="pedirCombo('Kit Premium', 'Heineken 600ml x6 + Whisky + Gelo Sabor + Energético', '149,90')">
+              Pedir agora
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="combo-card">
+        <div class="combo-img-wrap">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NDAgMzIwIiB3aWR0aD0iNjQwIiBoZWlnaHQ9IjMyMCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImJnY29tYm80IiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3R5bGU9InN0b3AtY29sb3I6IzBkMGQwZCIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjYwJSIgc3R5bGU9InN0b3AtY29sb3I6IzFhMTAwOCIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiMwZDBkMGQiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImFjY2VudGNvbWJvNCIgeDE9IjAlIiB5MT0iMCUiIHgyPSIxMDAlIiB5Mj0iMCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdHlsZT0ic3RvcC1jb2xvcjojZWY0NDQ0Ii8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3R5bGU9InN0b3AtY29sb3I6I2I5MWMxYyIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICAgIDxyYWRpYWxHcmFkaWVudCBpZD0iZ2xvd2NvbWJvNCIgY3g9IjYwJSIgY3k9IjUwJSIgcj0iNTAlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3R5bGU9InN0b3AtY29sb3I6I2VmNDQ0NDtzdG9wLW9wYWNpdHk6MC4xOCIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiNlZjQ0NDQ7c3RvcC1vcGFjaXR5OjAiLz4KICAgIDwvcmFkaWFsR3JhZGllbnQ+CiAgICA8ZmlsdGVyIGlkPSJibHVyY29tYm80Ij4KICAgICAgPGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iMzIiLz4KICAgIDwvZmlsdGVyPgogICAgPGNsaXBQYXRoIGlkPSJjbGlwY29tYm80Ij4KICAgICAgPHJlY3Qgd2lkdGg9IjY0MCIgaGVpZ2h0PSIzMjAiIHJ4PSIyMCIvPgogICAgPC9jbGlwUGF0aD4KICA8L2RlZnM+CgogIDwhLS0gQmFja2dyb3VuZCAtLT4KICA8cmVjdCB3aWR0aD0iNjQwIiBoZWlnaHQ9IjMyMCIgcng9IjIwIiBmaWxsPSJ1cmwoI2JnY29tYm80KSIvPgogIDxyZWN0IHdpZHRoPSI2NDAiIGhlaWdodD0iMzIwIiByeD0iMjAiIGZpbGw9InVybCgjZ2xvd2NvbWJvNCkiLz4KICA8Y2xpcFBhdGggaWQ9ImNsaXBjb21ibzQiPjxyZWN0IHdpZHRoPSI2NDAiIGhlaWdodD0iMzIwIiByeD0iMjAiLz48L2NsaXBQYXRoPgoKICA8IS0tIERlY29yYXRpdmUgY2lyY2xlcyAtLT4KICA8Y2lyY2xlIGN4PSI1NjAiIGN5PSI0MCIgcj0iMTIwIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDI1KSIgY2xpcC1wYXRoPSJ1cmwoI2NsaXBjb21ibzQpIi8+CiAgPGNpcmNsZSBjeD0iODAiIGN5PSIyODAiIHI9IjkwIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDIpIiBjbGlwLXBhdGg9InVybCgjY2xpcGNvbWJvNCkiLz4KCiAgPCEtLSBCb3JkZXIgLS0+CiAgPHJlY3QgeD0iMSIgeT0iMSIgd2lkdGg9IjYzOCIgaGVpZ2h0PSIzMTgiIHJ4PSIxOSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDgpIiBzdHJva2Utd2lkdGg9IjEuNSIvPgoKICA8IS0tIFRvcCBhY2NlbnQgbGluZSAtLT4KICA8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iNjQwIiBoZWlnaHQ9IjQiIHJ4PSIyIiBmaWxsPSJ1cmwoI2FjY2VudGNvbWJvNCkiLz4KCiAgPCEtLSBUYWcgcGlsbCAtLT4KICA8cmVjdCB4PSIyNCIgeT0iMjIiIHdpZHRoPSIxNTAiIGhlaWdodD0iMjYiIHJ4PSIxMyIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjA4KSIgc3Ryb2tlPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMTIpIiBzdHJva2Utd2lkdGg9IjEiLz4KICA8dGV4dCB4PSI5OSIgeT0iMzkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc2l6ZT0iMTEiIGZpbGw9IiNlZjQ0NDQiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC13ZWlnaHQ9IjcwMCIgbGV0dGVyLXNwYWNpbmc9IjAuNSI+Q0hBTUEgTyBQRVNTT0FMPC90ZXh0PgoKICA8IS0tIFRpdGxlIC0tPgogIDx0ZXh0IHg9IjI0IiB5PSI4MiIgZm9udC1zaXplPSIzNiIgZmlsbD0id2hpdGUiIGZvbnQtZmFtaWx5PSJBcmlhbCBCbGFjaywgQXJpYWwiIGZvbnQtd2VpZ2h0PSI5MDAiIGxldHRlci1zcGFjaW5nPSItMC41Ij5LSVQgQ0hVUlJBU0NPPC90ZXh0PgoKICA8IS0tIERlc2MgLS0+CiAgPHRleHQgeD0iMjQiIHk9IjEwOCIgZm9udC1zaXplPSIxMyIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjU1KSIgZm9udC1mYW1pbHk9IkFyaWFsIj5CcmFobWEgNjAwbWwgeDYgKyBTa29sIExhdGEgeDYgKyBBbWVuZG9pbSArIENhcnbDo288L3RleHQ+CgogIDwhLS0gRGl2aWRlciAtLT4KICA8bGluZSB4MT0iMjQiIHkxPSIxMjQiIHgyPSIyMjAiIHkyPSIxMjQiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjEpIiBzdHJva2Utd2lkdGg9IjEiLz4KCiAgPCEtLSBJdGVtcyBhcmVhIC0tPgogIAogICAgICAgIDxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDE1MCwxODApIj4KICAgICAgICAgIDxjaXJjbGUgcj0iNjIiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wNykiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjEyKSIgc3Ryb2tlLXdpZHRoPSIxIi8+CiAgICAgICAgICA8Y2lyY2xlIHI9IjU0IiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDQpIi8+CiAgICAgICAgICA8dGV4dCB4PSIwIiB5PSIxMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSIzOCI+8J+NujwvdGV4dD4KICAgICAgICAgIDx0ZXh0IHg9IjAiIHk9IjgwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjEwIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuNikiIGZvbnQtZmFtaWx5PSJBcmlhbCI+QnJhaG1hIDYwMG1sIHg2PC90ZXh0PgogICAgICAgIDwvZz4KICAgICAgICA8ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSgyODAsMTUwKSI+CiAgICAgICAgICA8Y2lyY2xlIHI9IjU0IiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDcpIiBzdHJva2U9InJnYmEoMjU1LDI1NSwyNTUsMC4xMikiIHN0cm9rZS13aWR0aD0iMSIvPgogICAgICAgICAgPGNpcmNsZSByPSI0NiIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjA0KSIvPgogICAgICAgICAgPHRleHQgeD0iMCIgeT0iMTAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc2l6ZT0iMzMiPvCfpZw8L3RleHQ+CiAgICAgICAgICA8dGV4dCB4PSIwIiB5PSI3MiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSIxMCIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjYpIiBmb250LWZhbWlseT0iQXJpYWwiPlNrb2wgTGF0YSB4NjwvdGV4dD4KICAgICAgICA8L2c+CiAgICAgICAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMzgwLDE2MCkiPgogICAgICAgICAgPGNpcmNsZSByPSI1NCIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjA3KSIgc3Ryb2tlPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMTIpIiBzdHJva2Utd2lkdGg9IjEiLz4KICAgICAgICAgIDxjaXJjbGUgcj0iNDYiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wNCkiLz4KICAgICAgICAgIDx0ZXh0IHg9IjAiIHk9IjEwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjMzIj7wn5SlPC90ZXh0PgogICAgICAgICAgPHRleHQgeD0iMCIgeT0iNzIiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc2l6ZT0iMTAiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC42KSIgZm9udC1mYW1pbHk9IkFyaWFsIj5BbWVuZG9pbTwvdGV4dD4KICAgICAgICA8L2c+CiAgICAgICAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNDkwLDE4NSkiPgogICAgICAgICAgPGNpcmNsZSByPSI1NCIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjA3KSIgc3Ryb2tlPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMTIpIiBzdHJva2Utd2lkdGg9IjEiLz4KICAgICAgICAgIDxjaXJjbGUgcj0iNDYiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wNCkiLz4KICAgICAgICAgIDx0ZXh0IHg9IjAiIHk9IjEwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjMzIj7wn42WPC90ZXh0PgogICAgICAgICAgPHRleHQgeD0iMCIgeT0iNzIiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc2l6ZT0iMTAiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC42KSIgZm9udC1mYW1pbHk9IkFyaWFsIj5DYXJ2w6NvPC90ZXh0PgogICAgICAgIDwvZz4KCiAgPCEtLSBCb3R0b20gYmFyIC0tPgogIDxyZWN0IHg9IjAiIHk9IjI2OCIgd2lkdGg9IjY0MCIgaGVpZ2h0PSI1MiIgcng9IjAiIGZpbGw9InJnYmEoMCwwLDAsMC4zNSkiIGNsaXAtcGF0aD0idXJsKCNjbGlwY29tYm80KSIvPgogIDxyZWN0IHg9IjAiIHk9IjI2OCIgd2lkdGg9IjY0MCIgaGVpZ2h0PSIxIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDYpIi8+CgogIDwhLS0gUHJpY2UgLS0+CiAgPHRleHQgeD0iMjQiIHk9IjMwMiIgZm9udC1zaXplPSIyOCIgZmlsbD0idXJsKCNhY2NlbnRjb21ibzQpIiBmb250LWZhbWlseT0iQXJpYWwgQmxhY2ssIEFyaWFsIiBmb250LXdlaWdodD0iOTAwIj5SJCA4OSw5MDwvdGV4dD4KCiAgPCEtLSBTYXZpbmdzIGJhZGdlIC0tPgogIDxyZWN0IHg9IjEzMCIgeT0iMjgwIiB3aWR0aD0iMTUwIiBoZWlnaHQ9IjI2IiByeD0iMTMiIGZpbGw9IiNlZjQ0NDQiIG9wYWNpdHk9IjAuMTgiLz4KICA8cmVjdCB4PSIxMzAiIHk9IjI4MCIgd2lkdGg9IjE1MCIgaGVpZ2h0PSIyNiIgcng9IjEzIiBmaWxsPSJub25lIiBzdHJva2U9IiNlZjQ0NDQiIHN0cm9rZS13aWR0aD0iMSIgb3BhY2l0eT0iMC40Ii8+CiAgPHRleHQgeD0iMjA1IiB5PSIyOTciIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc2l6ZT0iMTEiIGZpbGw9IiNlZjQ0NDQiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC13ZWlnaHQ9IjcwMCI+RWNvbm9taXplIFIkIDE1LDAwPC90ZXh0PgoKICA8IS0tIENUQSAtLT4KICA8cmVjdCB4PSI0OTAiIHk9IjI3NCIgd2lkdGg9IjEzMCIgaGVpZ2h0PSIzNiIgcng9IjE4IiBmaWxsPSJ1cmwoI2FjY2VudGNvbWJvNCkiLz4KICA8dGV4dCB4PSI1NTUiIHk9IjI5NiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSIxMyIgZmlsbD0iIzBkMGQwZCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXdlaWdodD0iNzAwIj5QRURJUiBBR09SQTwvdGV4dD4KPC9zdmc+" alt="Kit Churrasco" class="combo-img">
+          <div class="combo-tag">Chama o pessoal</div>
+        </div>
+        <div class="combo-body">
+          <h3 class="combo-name">Kit Churrasco</h3>
+          <p class="combo-desc">Brahma 600ml x6 + Skol Lata x6 + Amendoim + Carvão</p>
+          <ul class="combo-items"><li>Brahma 600ml x6</li><li>Skol Lata x6</li><li>Amendoim</li><li>Carvão</li></ul>
+          <div class="combo-footer">
+            <div>
+              <div class="combo-price">R$ 89,90</div>
+              <div class="combo-savings" style="color:#ef4444">Economize R$ 15,00</div>
+            </div>
+            <button class="combo-btn" style="background:#ef4444" onclick="pedirCombo('Kit Churrasco', 'Brahma 600ml x6 + Skol Lata x6 + Amendoim + Carvão', '89,90')">
+              Pedir agora
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="combo-card">
+        <div class="combo-img-wrap">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NDAgMzIwIiB3aWR0aD0iNjQwIiBoZWlnaHQ9IjMyMCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImJnY29tYm81IiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3R5bGU9InN0b3AtY29sb3I6IzBkMGQwZCIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjYwJSIgc3R5bGU9InN0b3AtY29sb3I6IzFhMTAwOCIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiMwZDBkMGQiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImFjY2VudGNvbWJvNSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIxMDAlIiB5Mj0iMCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdHlsZT0ic3RvcC1jb2xvcjojYTg1NWY3Ii8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3R5bGU9InN0b3AtY29sb3I6IzdjM2FlZCIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICAgIDxyYWRpYWxHcmFkaWVudCBpZD0iZ2xvd2NvbWJvNSIgY3g9IjYwJSIgY3k9IjUwJSIgcj0iNTAlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3R5bGU9InN0b3AtY29sb3I6I2E4NTVmNztzdG9wLW9wYWNpdHk6MC4xOCIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiNhODU1Zjc7c3RvcC1vcGFjaXR5OjAiLz4KICAgIDwvcmFkaWFsR3JhZGllbnQ+CiAgICA8ZmlsdGVyIGlkPSJibHVyY29tYm81Ij4KICAgICAgPGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iMzIiLz4KICAgIDwvZmlsdGVyPgogICAgPGNsaXBQYXRoIGlkPSJjbGlwY29tYm81Ij4KICAgICAgPHJlY3Qgd2lkdGg9IjY0MCIgaGVpZ2h0PSIzMjAiIHJ4PSIyMCIvPgogICAgPC9jbGlwUGF0aD4KICA8L2RlZnM+CgogIDwhLS0gQmFja2dyb3VuZCAtLT4KICA8cmVjdCB3aWR0aD0iNjQwIiBoZWlnaHQ9IjMyMCIgcng9IjIwIiBmaWxsPSJ1cmwoI2JnY29tYm81KSIvPgogIDxyZWN0IHdpZHRoPSI2NDAiIGhlaWdodD0iMzIwIiByeD0iMjAiIGZpbGw9InVybCgjZ2xvd2NvbWJvNSkiLz4KICA8Y2xpcFBhdGggaWQ9ImNsaXBjb21ibzUiPjxyZWN0IHdpZHRoPSI2NDAiIGhlaWdodD0iMzIwIiByeD0iMjAiLz48L2NsaXBQYXRoPgoKICA8IS0tIERlY29yYXRpdmUgY2lyY2xlcyAtLT4KICA8Y2lyY2xlIGN4PSI1NjAiIGN5PSI0MCIgcj0iMTIwIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDI1KSIgY2xpcC1wYXRoPSJ1cmwoI2NsaXBjb21ibzUpIi8+CiAgPGNpcmNsZSBjeD0iODAiIGN5PSIyODAiIHI9IjkwIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDIpIiBjbGlwLXBhdGg9InVybCgjY2xpcGNvbWJvNSkiLz4KCiAgPCEtLSBCb3JkZXIgLS0+CiAgPHJlY3QgeD0iMSIgeT0iMSIgd2lkdGg9IjYzOCIgaGVpZ2h0PSIzMTgiIHJ4PSIxOSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDgpIiBzdHJva2Utd2lkdGg9IjEuNSIvPgoKICA8IS0tIFRvcCBhY2NlbnQgbGluZSAtLT4KICA8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iNjQwIiBoZWlnaHQ9IjQiIHJ4PSIyIiBmaWxsPSJ1cmwoI2FjY2VudGNvbWJvNSkiLz4KCiAgPCEtLSBUYWcgcGlsbCAtLT4KICA8cmVjdCB4PSIyNCIgeT0iMjIiIHdpZHRoPSIxNTAiIGhlaWdodD0iMjYiIHJ4PSIxMyIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjA4KSIgc3Ryb2tlPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMTIpIiBzdHJva2Utd2lkdGg9IjEiLz4KICA8dGV4dCB4PSI5OSIgeT0iMzkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc2l6ZT0iMTEiIGZpbGw9IiNhODU1ZjciIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC13ZWlnaHQ9IjcwMCIgbGV0dGVyLXNwYWNpbmc9IjAuNSI+UEVSRkVJVE8gUEFSQSBET0lTPC90ZXh0PgoKICA8IS0tIFRpdGxlIC0tPgogIDx0ZXh0IHg9IjI0IiB5PSI4MiIgZm9udC1zaXplPSIzNiIgZmlsbD0id2hpdGUiIGZvbnQtZmFtaWx5PSJBcmlhbCBCbGFjaywgQXJpYWwiIGZvbnQtd2VpZ2h0PSI5MDAiIGxldHRlci1zcGFjaW5nPSItMC41Ij5LSVQgQ0FTQUw8L3RleHQ+CgogIDwhLS0gRGVzYyAtLT4KICA8dGV4dCB4PSIyNCIgeT0iMTA4IiBmb250LXNpemU9IjEzIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuNTUpIiBmb250LWZhbWlseT0iQXJpYWwiPkhlaW5la2VuIExhdGEgeDYgKyBWaW5obyBUaW50byArIFRhw6dhcyArIEJhdGF0YSBMYXlzPC90ZXh0PgoKICA8IS0tIERpdmlkZXIgLS0+CiAgPGxpbmUgeDE9IjI0IiB5MT0iMTI0IiB4Mj0iMjIwIiB5Mj0iMTI0IiBzdHJva2U9InJnYmEoMjU1LDI1NSwyNTUsMC4xKSIgc3Ryb2tlLXdpZHRoPSIxIi8+CgogIDwhLS0gSXRlbXMgYXJlYSAtLT4KICAKICAgICAgICA8ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxNTAsMTgwKSI+CiAgICAgICAgICA8Y2lyY2xlIHI9IjYyIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDcpIiBzdHJva2U9InJnYmEoMjU1LDI1NSwyNTUsMC4xMikiIHN0cm9rZS13aWR0aD0iMSIvPgogICAgICAgICAgPGNpcmNsZSByPSI1NCIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjA0KSIvPgogICAgICAgICAgPHRleHQgeD0iMCIgeT0iMTAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc2l6ZT0iMzgiPvCfjbo8L3RleHQ+CiAgICAgICAgICA8dGV4dCB4PSIwIiB5PSI4MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSIxMCIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjYpIiBmb250LWZhbWlseT0iQXJpYWwiPkhlaW5la2VuIHg2PC90ZXh0PgogICAgICAgIDwvZz4KICAgICAgICA8ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSgyODAsMTUwKSI+CiAgICAgICAgICA8Y2lyY2xlIHI9IjU0IiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDcpIiBzdHJva2U9InJnYmEoMjU1LDI1NSwyNTUsMC4xMikiIHN0cm9rZS13aWR0aD0iMSIvPgogICAgICAgICAgPGNpcmNsZSByPSI0NiIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjA0KSIvPgogICAgICAgICAgPHRleHQgeD0iMCIgeT0iMTAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc2l6ZT0iMzMiPvCfjbc8L3RleHQ+CiAgICAgICAgICA8dGV4dCB4PSIwIiB5PSI3MiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSIxMCIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjYpIiBmb250LWZhbWlseT0iQXJpYWwiPlZpbmhvIFRpbnRvPC90ZXh0PgogICAgICAgIDwvZz4KICAgICAgICA8ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSgzODAsMTYwKSI+CiAgICAgICAgICA8Y2lyY2xlIHI9IjU0IiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDcpIiBzdHJva2U9InJnYmEoMjU1LDI1NSwyNTUsMC4xMikiIHN0cm9rZS13aWR0aD0iMSIvPgogICAgICAgICAgPGNpcmNsZSByPSI0NiIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjA0KSIvPgogICAgICAgICAgPHRleHQgeD0iMCIgeT0iMTAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc2l6ZT0iMzMiPvCfpYI8L3RleHQ+CiAgICAgICAgICA8dGV4dCB4PSIwIiB5PSI3MiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSIxMCIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjYpIiBmb250LWZhbWlseT0iQXJpYWwiPkJhdGF0YSBMYXlzPC90ZXh0PgogICAgICAgIDwvZz4KICAgICAgICA8ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg0OTAsMTg1KSI+CiAgICAgICAgICA8Y2lyY2xlIHI9IjU0IiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDcpIiBzdHJva2U9InJnYmEoMjU1LDI1NSwyNTUsMC4xMikiIHN0cm9rZS13aWR0aD0iMSIvPgogICAgICAgICAgPGNpcmNsZSByPSI0NiIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjA0KSIvPgogICAgICAgICAgPHRleHQgeD0iMCIgeT0iMTAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc2l6ZT0iMzMiPvCfpZQ8L3RleHQ+CiAgICAgICAgICA8dGV4dCB4PSIwIiB5PSI3MiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSIxMCIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjYpIiBmb250LWZhbWlseT0iQXJpYWwiPlRhw6dhczwvdGV4dD4KICAgICAgICA8L2c+CgogIDwhLS0gQm90dG9tIGJhciAtLT4KICA8cmVjdCB4PSIwIiB5PSIyNjgiIHdpZHRoPSI2NDAiIGhlaWdodD0iNTIiIHJ4PSIwIiBmaWxsPSJyZ2JhKDAsMCwwLDAuMzUpIiBjbGlwLXBhdGg9InVybCgjY2xpcGNvbWJvNSkiLz4KICA8cmVjdCB4PSIwIiB5PSIyNjgiIHdpZHRoPSI2NDAiIGhlaWdodD0iMSIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjA2KSIvPgoKICA8IS0tIFByaWNlIC0tPgogIDx0ZXh0IHg9IjI0IiB5PSIzMDIiIGZvbnQtc2l6ZT0iMjgiIGZpbGw9InVybCgjYWNjZW50Y29tYm81KSIgZm9udC1mYW1pbHk9IkFyaWFsIEJsYWNrLCBBcmlhbCIgZm9udC13ZWlnaHQ9IjkwMCI+UiQgOTksOTA8L3RleHQ+CgogIDwhLS0gU2F2aW5ncyBiYWRnZSAtLT4KICA8cmVjdCB4PSIxMzAiIHk9IjI4MCIgd2lkdGg9IjE1MCIgaGVpZ2h0PSIyNiIgcng9IjEzIiBmaWxsPSIjYTg1NWY3IiBvcGFjaXR5PSIwLjE4Ii8+CiAgPHJlY3QgeD0iMTMwIiB5PSIyODAiIHdpZHRoPSIxNTAiIGhlaWdodD0iMjYiIHJ4PSIxMyIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTg1NWY3IiBzdHJva2Utd2lkdGg9IjEiIG9wYWNpdHk9IjAuNCIvPgogIDx0ZXh0IHg9IjIwNSIgeT0iMjk3IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjExIiBmaWxsPSIjYTg1NWY3IiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtd2VpZ2h0PSI3MDAiPkVjb25vbWl6ZSBSJCAxOCwwMDwvdGV4dD4KCiAgPCEtLSBDVEEgLS0+CiAgPHJlY3QgeD0iNDkwIiB5PSIyNzQiIHdpZHRoPSIxMzAiIGhlaWdodD0iMzYiIHJ4PSIxOCIgZmlsbD0idXJsKCNhY2NlbnRjb21ibzUpIi8+CiAgPHRleHQgeD0iNTU1IiB5PSIyOTYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc2l6ZT0iMTMiIGZpbGw9IiMwZDBkMGQiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC13ZWlnaHQ9IjcwMCI+UEVESVIgQUdPUkE8L3RleHQ+Cjwvc3ZnPg==" alt="Kit Casal" class="combo-img">
+          <div class="combo-tag">Perfeito para dois</div>
+        </div>
+        <div class="combo-body">
+          <h3 class="combo-name">Kit Casal</h3>
+          <p class="combo-desc">Heineken Lata x6 + Vinho Tinto + Batata Lays + Taças</p>
+          <ul class="combo-items"><li>Heineken Lata x6</li><li>Vinho Tinto</li><li>Batata Lays</li><li>Taças</li></ul>
+          <div class="combo-footer">
+            <div>
+              <div class="combo-price">R$ 99,90</div>
+              <div class="combo-savings" style="color:#a855f7">Economize R$ 18,00</div>
+            </div>
+            <button class="combo-btn" style="background:#a855f7" onclick="pedirCombo('Kit Casal', 'Heineken Lata x6 + Vinho Tinto + Batata Lays + Taças', '99,90')">
+              Pedir agora
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="combo-card">
+        <div class="combo-img-wrap">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NDAgMzIwIiB3aWR0aD0iNjQwIiBoZWlnaHQ9IjMyMCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImJnY29tYm82IiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3R5bGU9InN0b3AtY29sb3I6IzBkMGQwZCIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjYwJSIgc3R5bGU9InN0b3AtY29sb3I6IzFhMTAwOCIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiMwZDBkMGQiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImFjY2VudGNvbWJvNiIgeDE9IjAlIiB5MT0iMCUiIHgyPSIxMDAlIiB5Mj0iMCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdHlsZT0ic3RvcC1jb2xvcjojZjk3MzE2Ii8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3R5bGU9InN0b3AtY29sb3I6I2MyNDEwYyIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICAgIDxyYWRpYWxHcmFkaWVudCBpZD0iZ2xvd2NvbWJvNiIgY3g9IjYwJSIgY3k9IjUwJSIgcj0iNTAlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3R5bGU9InN0b3AtY29sb3I6I2Y5NzMxNjtzdG9wLW9wYWNpdHk6MC4xOCIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiNmOTczMTY7c3RvcC1vcGFjaXR5OjAiLz4KICAgIDwvcmFkaWFsR3JhZGllbnQ+CiAgICA8ZmlsdGVyIGlkPSJibHVyY29tYm82Ij4KICAgICAgPGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iMzIiLz4KICAgIDwvZmlsdGVyPgogICAgPGNsaXBQYXRoIGlkPSJjbGlwY29tYm82Ij4KICAgICAgPHJlY3Qgd2lkdGg9IjY0MCIgaGVpZ2h0PSIzMjAiIHJ4PSIyMCIvPgogICAgPC9jbGlwUGF0aD4KICA8L2RlZnM+CgogIDwhLS0gQmFja2dyb3VuZCAtLT4KICA8cmVjdCB3aWR0aD0iNjQwIiBoZWlnaHQ9IjMyMCIgcng9IjIwIiBmaWxsPSJ1cmwoI2JnY29tYm82KSIvPgogIDxyZWN0IHdpZHRoPSI2NDAiIGhlaWdodD0iMzIwIiByeD0iMjAiIGZpbGw9InVybCgjZ2xvd2NvbWJvNikiLz4KICA8Y2xpcFBhdGggaWQ9ImNsaXBjb21ibzYiPjxyZWN0IHdpZHRoPSI2NDAiIGhlaWdodD0iMzIwIiByeD0iMjAiLz48L2NsaXBQYXRoPgoKICA8IS0tIERlY29yYXRpdmUgY2lyY2xlcyAtLT4KICA8Y2lyY2xlIGN4PSI1NjAiIGN5PSI0MCIgcj0iMTIwIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDI1KSIgY2xpcC1wYXRoPSJ1cmwoI2NsaXBjb21ibzYpIi8+CiAgPGNpcmNsZSBjeD0iODAiIGN5PSIyODAiIHI9IjkwIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDIpIiBjbGlwLXBhdGg9InVybCgjY2xpcGNvbWJvNikiLz4KCiAgPCEtLSBCb3JkZXIgLS0+CiAgPHJlY3QgeD0iMSIgeT0iMSIgd2lkdGg9IjYzOCIgaGVpZ2h0PSIzMTgiIHJ4PSIxOSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDgpIiBzdHJva2Utd2lkdGg9IjEuNSIvPgoKICA8IS0tIFRvcCBhY2NlbnQgbGluZSAtLT4KICA8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iNjQwIiBoZWlnaHQ9IjQiIHJ4PSIyIiBmaWxsPSJ1cmwoI2FjY2VudGNvbWJvNikiLz4KCiAgPCEtLSBUYWcgcGlsbCAtLT4KICA8cmVjdCB4PSIyNCIgeT0iMjIiIHdpZHRoPSIxNTAiIGhlaWdodD0iMjYiIHJ4PSIxMyIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjA4KSIgc3Ryb2tlPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMTIpIiBzdHJva2Utd2lkdGg9IjEiLz4KICA8dGV4dCB4PSI5OSIgeT0iMzkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc2l6ZT0iMTEiIGZpbGw9IiNmOTczMTYiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC13ZWlnaHQ9IjcwMCIgbGV0dGVyLXNwYWNpbmc9IjAuNSI+TUFJUyBQT1IgTUVOT1M8L3RleHQ+CgogIDwhLS0gVGl0bGUgLS0+CiAgPHRleHQgeD0iMjQiIHk9IjgyIiBmb250LXNpemU9IjM2IiBmaWxsPSJ3aGl0ZSIgZm9udC1mYW1pbHk9IkFyaWFsIEJsYWNrLCBBcmlhbCIgZm9udC13ZWlnaHQ9IjkwMCIgbGV0dGVyLXNwYWNpbmc9Ii0wLjUiPktJVCBFQ09OT01JQTwvdGV4dD4KCiAgPCEtLSBEZXNjIC0tPgogIDx0ZXh0IHg9IjI0IiB5PSIxMDgiIGZvbnQtc2l6ZT0iMTMiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC41NSkiIGZvbnQtZmFtaWx5PSJBcmlhbCI+QW50YXJjdGljYSBMYXRhIHgxMiArIFNrb2wgTGF0YSB4MTIgKyBEb3JpdG9zICsgUnVmdXM8L3RleHQ+CgogIDwhLS0gRGl2aWRlciAtLT4KICA8bGluZSB4MT0iMjQiIHkxPSIxMjQiIHgyPSIyMjAiIHkyPSIxMjQiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjEpIiBzdHJva2Utd2lkdGg9IjEiLz4KCiAgPCEtLSBJdGVtcyBhcmVhIC0tPgogIAogICAgICAgIDxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDE1MCwxODApIj4KICAgICAgICAgIDxjaXJjbGUgcj0iNjIiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wNykiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjEyKSIgc3Ryb2tlLXdpZHRoPSIxIi8+CiAgICAgICAgICA8Y2lyY2xlIHI9IjU0IiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDQpIi8+CiAgICAgICAgICA8dGV4dCB4PSIwIiB5PSIxMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSIzOCI+8J+NujwvdGV4dD4KICAgICAgICAgIDx0ZXh0IHg9IjAiIHk9IjgwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjEwIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuNikiIGZvbnQtZmFtaWx5PSJBcmlhbCI+QW50YXJjdGljYSB4MTI8L3RleHQ+CiAgICAgICAgPC9nPgogICAgICAgIDxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDI4MCwxNTApIj4KICAgICAgICAgIDxjaXJjbGUgcj0iNTQiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wNykiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjEyKSIgc3Ryb2tlLXdpZHRoPSIxIi8+CiAgICAgICAgICA8Y2lyY2xlIHI9IjQ2IiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDQpIi8+CiAgICAgICAgICA8dGV4dCB4PSIwIiB5PSIxMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSIzMyI+8J+NujwvdGV4dD4KICAgICAgICAgIDx0ZXh0IHg9IjAiIHk9IjcyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjEwIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuNikiIGZvbnQtZmFtaWx5PSJBcmlhbCI+U2tvbCB4MTI8L3RleHQ+CiAgICAgICAgPC9nPgogICAgICAgIDxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDM4MCwxNjApIj4KICAgICAgICAgIDxjaXJjbGUgcj0iNTQiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wNykiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjEyKSIgc3Ryb2tlLXdpZHRoPSIxIi8+CiAgICAgICAgICA8Y2lyY2xlIHI9IjQ2IiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDQpIi8+CiAgICAgICAgICA8dGV4dCB4PSIwIiB5PSIxMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSIzMyI+8J+MrjwvdGV4dD4KICAgICAgICAgIDx0ZXh0IHg9IjAiIHk9IjcyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjEwIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuNikiIGZvbnQtZmFtaWx5PSJBcmlhbCI+RG9yaXRvczwvdGV4dD4KICAgICAgICA8L2c+CiAgICAgICAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNDkwLDE4NSkiPgogICAgICAgICAgPGNpcmNsZSByPSI1NCIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjA3KSIgc3Ryb2tlPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMTIpIiBzdHJva2Utd2lkdGg9IjEiLz4KICAgICAgICAgIDxjaXJjbGUgcj0iNDYiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wNCkiLz4KICAgICAgICAgIDx0ZXh0IHg9IjAiIHk9IjEwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjMzIj7wn6WUPC90ZXh0PgogICAgICAgICAgPHRleHQgeD0iMCIgeT0iNzIiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc2l6ZT0iMTAiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC42KSIgZm9udC1mYW1pbHk9IkFyaWFsIj5SdWZ1czwvdGV4dD4KICAgICAgICA8L2c+CgogIDwhLS0gQm90dG9tIGJhciAtLT4KICA8cmVjdCB4PSIwIiB5PSIyNjgiIHdpZHRoPSI2NDAiIGhlaWdodD0iNTIiIHJ4PSIwIiBmaWxsPSJyZ2JhKDAsMCwwLDAuMzUpIiBjbGlwLXBhdGg9InVybCgjY2xpcGNvbWJvNikiLz4KICA8cmVjdCB4PSIwIiB5PSIyNjgiIHdpZHRoPSI2NDAiIGhlaWdodD0iMSIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjA2KSIvPgoKICA8IS0tIFByaWNlIC0tPgogIDx0ZXh0IHg9IjI0IiB5PSIzMDIiIGZvbnQtc2l6ZT0iMjgiIGZpbGw9InVybCgjYWNjZW50Y29tYm82KSIgZm9udC1mYW1pbHk9IkFyaWFsIEJsYWNrLCBBcmlhbCIgZm9udC13ZWlnaHQ9IjkwMCI+UiQgMTE5LDkwPC90ZXh0PgoKICA8IS0tIFNhdmluZ3MgYmFkZ2UgLS0+CiAgPHJlY3QgeD0iMTMwIiB5PSIyODAiIHdpZHRoPSIxNTAiIGhlaWdodD0iMjYiIHJ4PSIxMyIgZmlsbD0iI2Y5NzMxNiIgb3BhY2l0eT0iMC4xOCIvPgogIDxyZWN0IHg9IjEzMCIgeT0iMjgwIiB3aWR0aD0iMTUwIiBoZWlnaHQ9IjI2IiByeD0iMTMiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y5NzMxNiIgc3Ryb2tlLXdpZHRoPSIxIiBvcGFjaXR5PSIwLjQiLz4KICA8dGV4dCB4PSIyMDUiIHk9IjI5NyIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSIxMSIgZmlsbD0iI2Y5NzMxNiIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXdlaWdodD0iNzAwIj5FY29ub21pemUgUiQgMzAsMDA8L3RleHQ+CgogIDwhLS0gQ1RBIC0tPgogIDxyZWN0IHg9IjQ5MCIgeT0iMjc0IiB3aWR0aD0iMTMwIiBoZWlnaHQ9IjM2IiByeD0iMTgiIGZpbGw9InVybCgjYWNjZW50Y29tYm82KSIvPgogIDx0ZXh0IHg9IjU1NSIgeT0iMjk2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjEzIiBmaWxsPSIjMGQwZDBkIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtd2VpZ2h0PSI3MDAiPlBFRElSIEFHT1JBPC90ZXh0Pgo8L3N2Zz4=" alt="Kit Economia" class="combo-img">
+          <div class="combo-tag">Mais por menos</div>
+        </div>
+        <div class="combo-body">
+          <h3 class="combo-name">Kit Economia</h3>
+          <p class="combo-desc">Antarctica x12 + Skol Lata x12 + Doritos + Rufus</p>
+          <ul class="combo-items"><li>Antarctica x12</li><li>Skol Lata x12</li><li>Doritos</li><li>Rufus</li></ul>
+          <div class="combo-footer">
+            <div>
+              <div class="combo-price">R$ 119,90</div>
+              <div class="combo-savings" style="color:#f97316">Economize R$ 30,00</div>
+            </div>
+            <button class="combo-btn" style="background:#f97316" onclick="pedirCombo('Kit Economia', 'Antarctica x12 + Skol Lata x12 + Doritos + Rufus', '119,90')">
+              Pedir agora
+            </button>
+          </div>
+        </div>
+      </div>
+  </div>
+</section>
+
+<!-- MODAL DE PEDIDO -->
+<div class="combo-modal-overlay hidden" id="combo-modal">
+  <div class="combo-modal">
+    <h3 id="modal-combo-nome">Kit Raquete</h3>
+    <p id="modal-combo-desc">Skol x12 + Rufus + Doritos</p>
+    <label>Seu nome <input type="text" id="c-nome" placeholder="João Silva"></label>
+    <label>Telefone <input type="tel" id="c-tel" placeholder="(34) 99999-0000"></label>
+    <label>Endereço <input type="text" id="c-end" placeholder="Rua das Flores, 123"></label>
+    <label>Observações <textarea id="c-obs" placeholder="Troco, horário, etc..." rows="2"></textarea></label>
+    <div class="combo-modal-btns">
+      <button class="combo-cancel" onclick="fecharModal()">Cancelar</button>
+      <button class="combo-send" onclick="enviarWhats()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/>
+        </svg>
+        Enviar pedido
+      </button>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <img class="footer-logo" src="img/logo.png" alt="Mercearia Miranda">
+  <div class="footer-text">Mercearia Miranda — Pedidos pelo WhatsApp</div>
+  <div class="footer-age">Venda e consumo proibidos para menores de 18 anos</div>
+</footer>
+
+<script>
+// ============================================================
+// CONFIGURAÇÃO — mesmo número do cervejas.js
+// ============================================================
+const WHATSAPP = "5500000000000"; // <- seu número aqui
+
+// ============================================================
+// FIREBASE CONFIG — mesmas chaves do admin.js e cervejas.js
+// ============================================================
+const FIREBASE_CONFIG = {
+  apiKey:            "COLE_SUA_API_KEY_AQUI",
+  authDomain:        "COLE_SEU_AUTH_DOMAIN_AQUI",
+  projectId:         "COLE_SEU_PROJECT_ID_AQUI",
+  storageBucket:     "COLE_SEU_STORAGE_BUCKET_AQUI",
+  messagingSenderId: "COLE_SEU_MESSAGING_SENDER_ID_AQUI",
+  appId:             "COLE_SEU_APP_ID_AQUI",
+};
+
+const DEFAULT_COMBOS = [
+  { id:"c1", nome:"Kit Raquete",   tag:"O favorito do finde",  desc:"Skol Lata 350ml x12 + Rufus Ondulado + Doritos Nacho",       preco:79.90,  economia:"Economize R$ 12,00", itens:["Skol Lata 350ml x12","Rufus Ondulado","Doritos Nacho"],                cor:"#f5a623", available:true, img:null },
+  { id:"c2", nome:"Kit Brahma",    tag:"Classico brasileiro",   desc:"Brahma Lata 350ml x12 + Coca-Cola 2L",                       preco:69.90,  economia:"Economize R$ 8,00",  itens:["Brahma Lata 350ml x12","Coca-Cola 2L"],                              cor:"#3b82f6", available:true, img:null },
+  { id:"c3", nome:"Kit Premium",   tag:"Para impressionar",     desc:"Heineken 600ml x6 + Whisky + Gelo Sabor + Energetico",       preco:149.90, economia:"Economize R$ 25,00", itens:["Heineken 600ml x6","Whisky 1L","Gelo Sabor","Energetico"],             cor:"#22c55e", available:true, img:null },
+  { id:"c4", nome:"Kit Churrasco", tag:"Chama o pessoal",       desc:"Brahma 600ml x6 + Skol Lata x6 + Amendoim + Carvao",        preco:89.90,  economia:"Economize R$ 15,00", itens:["Brahma 600ml x6","Skol Lata x6","Amendoim","Carvao"],                  cor:"#ef4444", available:true, img:null },
+  { id:"c5", nome:"Kit Casal",     tag:"Perfeito para dois",    desc:"Heineken Lata x6 + Vinho Tinto + Batata Lays + Tacas",      preco:99.90,  economia:"Economize R$ 18,00", itens:["Heineken Lata x6","Vinho Tinto","Batata Lays","Tacas"],                cor:"#a855f7", available:true, img:null },
+  { id:"c6", nome:"Kit Economia",  tag:"Mais por menos",        desc:"Antarctica x12 + Skol Lata x12 + Doritos + Rufus",          preco:119.90, economia:"Economize R$ 30,00", itens:["Antarctica x12","Skol Lata x12","Doritos","Rufus"],                    cor:"#f97316", available:true, img:null },
+];
+
+let combos = [];
+let comboAtivo = {};
+
+function fmt(v) {
+  return Number(v).toLocaleString("pt-BR", {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+// ============================================================
+// RENDER COMBOS
+// ============================================================
+function renderCombos(list) {
+  const grid = document.getElementById("combos-grid");
+  const ativos = list.filter(c => c.available !== false);
+  if (!ativos.length) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:48px;color:rgba(255,255,255,0.4)"><div style="font-size:36px;margin-bottom:12px">🎁</div><div>Nenhum combo disponivel no momento.</div></div>`;
+    return;
+  }
+  grid.innerHTML = ativos.map(c => {
+    const itensHtml = (c.itens || []).map(i => `<li>${i}</li>`).join("");
+    const imgTag = c.img
+      ? `<img src="${c.img}" alt="${c.nome}" class="combo-img">`
+      : `<div class="combo-img" style="background:linear-gradient(135deg,#1a1008,#0d0d0d);display:flex;align-items:center;justify-content:center;font-size:52px">🎁</div>`;
+    return `
+      <div class="combo-card">
+        <div class="combo-img-wrap">
+          ${imgTag}
+          <div class="combo-tag">${c.tag || ""}</div>
+          <div style="position:absolute;top:0;left:0;right:0;height:4px;background:${c.cor || "#f5a623"};border-radius:0"></div>
+        </div>
+        <div class="combo-body">
+          <h3 class="combo-name">${c.nome}</h3>
+          <p class="combo-desc">${c.desc}</p>
+          <ul class="combo-items">${itensHtml}</ul>
+          <div class="combo-footer">
+            <div>
+              <div class="combo-price">R$ ${fmt(c.preco)}</div>
+              <div class="combo-savings" style="color:${c.cor || "#f5a623"}">${c.economia || ""}</div>
+            </div>
+            <button class="combo-btn" style="background:${c.cor || "#f5a623"};color:#0d0d0d"
+              onclick="pedirCombo('${c.nome.replace(/'/g,"\\'")}', '${c.desc.replace(/'/g,"\\'")}', '${fmt(c.preco)}')">
+              Pedir agora
+            </button>
+          </div>
+        </div>
+      </div>`;
+  }).join("");
+}
+
+// ============================================================
+// FIREBASE / LOCAL
+// ============================================================
+async function initCombos() {
+  try {
+    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
+    const { getFirestore, collection, onSnapshot } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    const app = initializeApp(FIREBASE_CONFIG);
+    const db  = getFirestore(app);
+    onSnapshot(collection(db, "combos"), (snap) => {
+      if (snap.empty) { loadLocal(); return; }
+      combos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderCombos(combos);
+    }, () => loadLocal());
+  } catch(e) {
+    loadLocal();
+  }
+}
+
+function loadLocal() {
+  const saved = localStorage.getItem("mm_combos");
+  combos = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(DEFAULT_COMBOS));
+  renderCombos(combos);
+}
+
+// ============================================================
+// MODAL DE PEDIDO
+// ============================================================
+function pedirCombo(nome, desc, preco) {
+  comboAtivo = { nome, desc, preco };
+  document.getElementById("modal-combo-nome").textContent = nome;
+  document.getElementById("modal-combo-desc").textContent = desc + " — R$ " + preco;
+  document.getElementById("combo-modal").classList.remove("hidden");
+}
+
+function fecharModal() {
+  document.getElementById("combo-modal").classList.add("hidden");
+}
+
+function enviarWhats() {
+  const nome = document.getElementById("c-nome").value.trim();
+  const tel  = document.getElementById("c-tel").value.trim();
+  const end  = document.getElementById("c-end").value.trim();
+  const obs  = document.getElementById("c-obs").value.trim();
+  if (!nome) { alert("Por favor, informe seu nome."); return; }
+
+  let msg = "*Pedido de Combo - Mercearia Miranda*\n\n";
+  msg += "*Combo:* " + comboAtivo.nome + "\n";
+  msg += "*Itens:* " + comboAtivo.desc + "\n";
+  msg += "*Valor:* R$ " + comboAtivo.preco + "\n\n";
+  msg += "*Cliente:* " + nome + "\n";
+  if (tel) msg += "*Telefone:* " + tel + "\n";
+  if (end) msg += "*Endereco:* " + end + "\n";
+  if (obs) msg += "*Obs:* " + obs;
+
+  window.open("https://wa.me/" + WHATSAPP + "?text=" + encodeURIComponent(msg), "_blank");
+  fecharModal();
+}
+
+document.getElementById("combo-modal").addEventListener("click", function(e) {
+  if (e.target === this) fecharModal();
+});
+
+// INIT
+window.addEventListener("DOMContentLoaded", initCombos);
+</script>
+</body>
+</html>

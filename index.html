@@ -12,6 +12,7 @@
     <div class="nav-inner container">
       <img class="nav-logo" src="img/logo.png" alt="Mercearia Miranda">
       <div class="nav-right">
+        <a href="combos.html" style="color:rgba(255,255,255,0.85);font-size:13px;font-weight:700;text-decoration:none;border:1.5px solid rgba(255,255,255,0.3);padding:6px 14px;border-radius:20px">Combos</a>
         <span class="age-badge">+18</span>
         <button class="cart-btn" onclick="openCart()">
           <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
@@ -77,19 +78,19 @@
         </div>
 
         <!-- KIT FESTA -->
-        <div class="promo-card combo">
+        <div class="promo-card combo" onclick="window.location.href='combos.html'" style="cursor:pointer">
           <span class="promo-emoji">🎉</span>
           <div class="promo-label">Kit da Festa</div>
           <div class="promo-name">Combo<br>Cerveja + Petisco</div>
           <div class="promo-desc">
-            Escolha 6 cervejas + 1 petisco e ganhe desconto especial no combo.
-            Perfeito para churrascos, reuniões e finais de semana.
+            Temos 6 combos especiais montados pra você economizar e aproveitar mais.
+            Churrasco, casal, premium e muito mais — peça com um clique!
           </div>
-          <span class="promo-highlight">🎁 Petisco por metade do preço</span>
+          <span class="promo-highlight">🎁 Ver todos os combos disponíveis</span>
           <br>
-          <button class="promo-cta" style="background:#8b5cf6;color:#fff;margin-top:20px" onclick="openComboInfo()">
-            Montar meu combo →
-          </button>
+          <a href="combos.html" class="promo-cta" style="background:#8b5cf6;color:#fff;margin-top:20px;text-decoration:none">
+            Ver combos →
+          </a>
         </div>
 
       </div>

@@ -7,12 +7,12 @@ const ADMIN_PASSWORD = "miranda2024"; // <- sua senha de acesso
 // FIREBASE — cole suas chaves aqui (sem aspas nos valores)
 // ============================================================
 const FIREBASE_CONFIG = {
-  apiKey: "AIzaSyCQmUzQrvf-A7BOaDWEBWAgfvQHayhEJ_4",
-  authDomain: "mercearia-miranda-e3874.firebaseapp.com",
-  projectId: "mercearia-miranda-e3874",
-  storageBucket: "mercearia-miranda-e3874.firebasestorage.app",
-  messagingSenderId: "623113957946",
-  appId: "1:623113957946:web:6e991a895a0fcae81f3b03"
+  apiKey:            "COLE_SUA_API_KEY_AQUI",
+  authDomain:        "COLE_SEU_AUTH_DOMAIN_AQUI",
+  projectId:         "COLE_SEU_PROJECT_ID_AQUI",
+  storageBucket:     "COLE_SEU_STORAGE_BUCKET_AQUI",
+  messagingSenderId: "COLE_SEU_MESSAGING_SENDER_ID_AQUI",
+  appId:             "COLE_SEU_APP_ID_AQUI",
 };
 
 let db = null;
@@ -93,9 +93,11 @@ async function startApp() {
   const ok = await initFirebase();
   if (ok) {
     listenProducts();
+    listenCombos();
   } else {
     showToast("Erro ao conectar ao Firebase. Verifique as chaves em js/admin.js", "error");
     useLocalStorage();
+    loadCombos();
   }
 }
 
@@ -388,6 +390,246 @@ function showToast(msg, type = "info") {
   t.className = "toast " + type + " show";
   clearTimeout(toastTO);
   toastTO = setTimeout(() => t.classList.remove("show"), 2600);
+}
+
+// ============================================================
+// MAIN TABS — Cervejas / Combos
+// ============================================================
+function switchMainTab(tab) {
+  document.getElementById("section-cervejas").style.display = tab === "cervejas" ? "block" : "none";
+  document.getElementById("section-combos").style.display   = tab === "combos"   ? "block" : "none";
+  document.getElementById("tab-cervejas").classList.toggle("active", tab === "cervejas");
+  document.getElementById("tab-combos").classList.toggle("active",   tab === "combos");
+  if (tab === "combos") renderCombosAdmin();
+}
+
+// ============================================================
+// COMBOS STATE
+// ============================================================
+let combos       = [];
+let editingCombo = null;
+let pendingComboImg = null;
+let selectedCor  = "#f5a623";
+
+const DEFAULT_COMBOS = [
+  { id: "c1", nome: "Kit Raquete",   tag: "O favorito do finde",   desc: "Skol Lata 350ml x12 + Rufus Ondulado + Doritos Nacho",          preco: 79.90,  economia: "Economize R$ 12,00", itens: ["Skol Lata 350ml x12","Rufus Ondulado","Doritos Nacho"],                       cor: "#f5a623", available: true, img: null },
+  { id: "c2", nome: "Kit Brahma",    tag: "Classico brasileiro",    desc: "Brahma Lata 350ml x12 + Coca-Cola 2L",                          preco: 69.90,  economia: "Economize R$ 8,00",  itens: ["Brahma Lata 350ml x12","Coca-Cola 2L"],                                       cor: "#3b82f6", available: true, img: null },
+  { id: "c3", nome: "Kit Premium",   tag: "Para impressionar",      desc: "Heineken 600ml x6 + Whisky + Gelo Sabor + Energetico",          preco: 149.90, economia: "Economize R$ 25,00", itens: ["Heineken 600ml x6","Whisky 1L","Gelo Sabor","Energetico"],                    cor: "#22c55e", available: true, img: null },
+  { id: "c4", nome: "Kit Churrasco", tag: "Chama o pessoal",        desc: "Brahma 600ml x6 + Skol Lata x6 + Amendoim + Carvao",           preco: 89.90,  economia: "Economize R$ 15,00", itens: ["Brahma 600ml x6","Skol Lata x6","Amendoim","Carvao"],                         cor: "#ef4444", available: true, img: null },
+  { id: "c5", nome: "Kit Casal",     tag: "Perfeito para dois",     desc: "Heineken Lata x6 + Vinho Tinto + Batata Lays + Tacas",          preco: 99.90,  economia: "Economize R$ 18,00", itens: ["Heineken Lata x6","Vinho Tinto","Batata Lays","Tacas"],                       cor: "#a855f7", available: true, img: null },
+  { id: "c6", nome: "Kit Economia",  tag: "Mais por menos",         desc: "Antarctica x12 + Skol Lata x12 + Doritos + Rufus",             preco: 119.90, economia: "Economize R$ 30,00", itens: ["Antarctica x12","Skol Lata x12","Doritos","Rufus"],                           cor: "#f97316", available: true, img: null },
+];
+
+// ============================================================
+// COMBOS FIREBASE / LOCAL
+// ============================================================
+function loadCombos() {
+  const saved = localStorage.getItem("mm_combos");
+  combos = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(DEFAULT_COMBOS));
+  renderCombosAdmin();
+}
+
+function saveCombosLocal() {
+  localStorage.setItem("mm_combos", JSON.stringify(combos));
+}
+
+async function listenCombos() {
+  if (!isFirebaseReady) { loadCombos(); return; }
+  const { collection, onSnapshot } = window._fb;
+  onSnapshot(collection(db, "combos"), (snap) => {
+    if (snap.empty) { loadCombos(); return; }
+    combos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderCombosAdmin();
+  }, () => loadCombos());
+}
+
+// ============================================================
+// RENDER COMBOS ADMIN
+// ============================================================
+function renderCombosAdmin() {
+  const grid = document.getElementById("combos-grid-admin");
+  const cnt  = document.getElementById("combo-count");
+  if (cnt) cnt.textContent = combos.length + " combo" + (combos.length !== 1 ? "s" : "");
+  if (!combos.length) {
+    grid.innerHTML = `<div class="empty-state"><div class="empty-icon">🎁</div><div class="empty-text">Nenhum combo cadastrado</div><div class="empty-sub">Clique em "Novo Combo" para adicionar</div></div>`;
+    return;
+  }
+  grid.innerHTML = combos.map(c => `
+    <div class="combo-admin-card${!c.available ? " unavailable" : ""}">
+      <div class="combo-admin-color-bar" style="background:${c.cor || "#f5a623"}"></div>
+      <div class="combo-admin-body">
+        <div class="combo-admin-img">
+          ${c.img ? `<img src="${c.img}" alt="${c.nome}">` : `<span style="font-size:28px">🎁</span>`}
+        </div>
+        <div class="combo-admin-info">
+          <div class="combo-admin-name">${c.nome}</div>
+          <div class="combo-admin-tag">${c.tag || ""}</div>
+          <div class="combo-admin-desc">${c.desc || ""}</div>
+          <div class="combo-admin-price">R$ ${fmt(c.preco || 0)}</div>
+        </div>
+        <div class="combo-admin-actions">
+          <div class="toggle-wrap" style="margin-bottom:8px">
+            <span class="toggle-label">${c.available ? "Ativo" : "Inativo"}</span>
+            <label class="toggle">
+              <input type="checkbox" ${c.available ? "checked" : ""} onchange="toggleCombo('${c.id}', this.checked)">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <button class="edit-btn" onclick="openEditCombo('${c.id}')">Editar</button>
+          <button class="del-btn"  onclick="confirmDeleteCombo('${c.id}')">Excluir</button>
+        </div>
+      </div>
+    </div>`).join("");
+}
+
+// ============================================================
+// TOGGLE COMBO
+// ============================================================
+async function toggleCombo(id, val) {
+  if (isFirebaseReady) {
+    try {
+      const { doc, updateDoc } = window._fb;
+      await updateDoc(doc(db, "combos", id), { available: val });
+      showToast(val ? "Combo ativado" : "Combo desativado", "info");
+    } catch(e) { showToast("Erro: " + e.message, "error"); }
+  } else {
+    const c = combos.find(x => x.id === id);
+    if (c) { c.available = val; saveCombosLocal(); renderCombosAdmin(); }
+    showToast(val ? "Combo ativado" : "Combo desativado", "info");
+  }
+}
+
+// ============================================================
+// ADD / EDIT COMBO MODAL
+// ============================================================
+function openAddCombo() {
+  editingCombo   = null;
+  pendingComboImg = null;
+  selectedCor    = "#f5a623";
+  document.getElementById("combo-modal-title").textContent = "Novo Combo";
+  ["c-name","c-tag","c-desc","c-saving"].forEach(id => document.getElementById(id).value = "");
+  document.getElementById("c-price").value   = "";
+  document.getElementById("c-items").value   = "";
+  document.getElementById("c-available").checked = true;
+  document.getElementById("combo-img-preview").classList.add("hidden");
+  document.getElementById("combo-img-placeholder").style.display = "block";
+  document.getElementById("c-img").value = "";
+  document.querySelectorAll(".color-opt").forEach(b => {
+    b.classList.toggle("active", b.dataset.cor === selectedCor);
+  });
+  document.getElementById("combo-modal").classList.remove("hidden");
+}
+
+function openEditCombo(id) {
+  const c = combos.find(x => x.id === id);
+  if (!c) return;
+  editingCombo    = id;
+  pendingComboImg = c.img || null;
+  selectedCor     = c.cor || "#f5a623";
+  document.getElementById("combo-modal-title").textContent = "Editar Combo";
+  document.getElementById("c-name").value    = c.nome    || "";
+  document.getElementById("c-tag").value     = c.tag     || "";
+  document.getElementById("c-desc").value    = c.desc    || "";
+  document.getElementById("c-price").value   = c.preco   || "";
+  document.getElementById("c-saving").value  = c.economia || "";
+  document.getElementById("c-items").value   = (c.itens || []).join("\n");
+  document.getElementById("c-available").checked = c.available !== false;
+  document.querySelectorAll(".color-opt").forEach(b => {
+    b.classList.toggle("active", b.dataset.cor === selectedCor);
+  });
+  const prev = document.getElementById("combo-img-preview");
+  const ph   = document.getElementById("combo-img-placeholder");
+  if (c.img) { prev.src = c.img; prev.classList.remove("hidden"); ph.style.display = "none"; }
+  else { prev.classList.add("hidden"); ph.style.display = "block"; }
+  document.getElementById("combo-modal").classList.remove("hidden");
+}
+
+function closeComboModal() {
+  document.getElementById("combo-modal").classList.add("hidden");
+}
+
+function previewComboImg(input) {
+  const file = input.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    pendingComboImg = e.target.result;
+    const prev = document.getElementById("combo-img-preview");
+    const ph   = document.getElementById("combo-img-placeholder");
+    prev.src = pendingComboImg; prev.classList.remove("hidden"); ph.style.display = "none";
+  };
+  reader.readAsDataURL(file);
+}
+
+function selectCor(btn) {
+  selectedCor = btn.dataset.cor;
+  document.querySelectorAll(".color-opt").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+}
+
+async function saveCombo() {
+  const nome      = document.getElementById("c-name").value.trim();
+  const tag       = document.getElementById("c-tag").value.trim();
+  const desc      = document.getElementById("c-desc").value.trim();
+  const preco     = parseFloat(document.getElementById("c-price").value);
+  const economia  = document.getElementById("c-saving").value.trim();
+  const itensRaw  = document.getElementById("c-items").value.trim();
+  const available = document.getElementById("c-available").checked;
+  const itens     = itensRaw.split("\n").map(s => s.trim()).filter(Boolean);
+
+  if (!nome || isNaN(preco) || preco < 0) {
+    showToast("Preencha nome e preco corretamente.", "error"); return;
+  }
+
+  const data = { nome, tag, desc, preco, economia, itens, available, cor: selectedCor, img: pendingComboImg || null };
+
+  if (isFirebaseReady) {
+    try {
+      const { collection, addDoc, doc, updateDoc, serverTimestamp } = window._fb;
+      if (editingCombo) {
+        await updateDoc(doc(db, "combos", editingCombo), { ...data, updatedAt: serverTimestamp() });
+        showToast("Combo atualizado!", "success");
+      } else {
+        await addDoc(collection(db, "combos"), { ...data, createdAt: serverTimestamp() });
+        showToast("Combo adicionado!", "success");
+      }
+    } catch(e) { showToast("Erro ao salvar: " + e.message, "error"); return; }
+  } else {
+    if (editingCombo) {
+      const idx = combos.findIndex(c => c.id === editingCombo);
+      if (idx !== -1) combos[idx] = { ...combos[idx], ...data };
+    } else {
+      combos.push({ id: "c" + Date.now(), ...data });
+    }
+    saveCombosLocal();
+    renderCombosAdmin();
+    showToast(editingCombo ? "Combo atualizado!" : "Combo adicionado!", "success");
+  }
+  closeComboModal();
+}
+
+// ============================================================
+// DELETE COMBO
+// ============================================================
+function confirmDeleteCombo(id) {
+  const c = combos.find(x => x.id === id);
+  if (!c) return;
+  if (!confirm(`Excluir o combo "${c.nome}"? Esta acao nao pode ser desfeita.`)) return;
+  deleteCombo(id);
+}
+
+async function deleteCombo(id) {
+  if (isFirebaseReady) {
+    try {
+      const { doc, deleteDoc } = window._fb;
+      await deleteDoc(doc(db, "combos", id));
+      showToast("Combo excluido.", "info");
+    } catch(e) { showToast("Erro ao excluir: " + e.message, "error"); }
+  } else {
+    combos = combos.filter(c => c.id !== id);
+    saveCombosLocal();
+    renderCombosAdmin();
+    showToast("Combo excluido.", "info");
+  }
 }
 
 // ============================================================
