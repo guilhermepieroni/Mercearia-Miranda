@@ -1,20 +1,20 @@
 // ============================================================
 // CONFIGURAÇÕES
 // ============================================================
-const WHATSAPP    = "5500000000000"; // <- número da mercearia: 55 + DDD + número
+const WHATSAPP    = "553438142854"; // <- número da mercearia: 55 + DDD + número
 const FLASH_DISCOUNT = 0.10;         // 10% de desconto
 const FLASH_DAYS     = [5, 6];       // 5 = sexta-feira, 6 = sábado
 
 // ============================================================
 // FIREBASE — mesmas chaves do admin.js
 // ============================================================
-const FIREBASE_CONFIG = {
-  apiKey:            "COLE_SUA_API_KEY_AQUI",
-  authDomain:        "COLE_SEU_AUTH_DOMAIN_AQUI",
-  projectId:         "COLE_SEU_PROJECT_ID_AQUI",
-  storageBucket:     "COLE_SEU_STORAGE_BUCKET_AQUI",
-  messagingSenderId: "COLE_SEU_MESSAGING_SENDER_ID_AQUI",
-  appId:             "COLE_SEU_APP_ID_AQUI",
+const firebaseConfig = {
+  apiKey: "AIzaSyCQmUzQrvf-A7BOaDWEBWAgfvQHayhEJ_4",
+  authDomain: "mercearia-miranda-e3874.firebaseapp.com",
+  projectId: "mercearia-miranda-e3874",
+  storageBucket: "mercearia-miranda-e3874.firebasestorage.app",
+  messagingSenderId: "623113957946",
+  appId: "1:623113957946:web:6e991a895a0fcae81f3b03"
 };
 
 // ============================================================
