@@ -8,7 +8,7 @@ const FLASH_DAYS     = [5, 6];       // 5 = sexta-feira, 6 = sábado
 // ============================================================
 // FIREBASE — mesmas chaves do admin.js
 // ============================================================
-const firebaseConfig = {
+const FIREBASE_CONFIG = {
   apiKey: "AIzaSyCQmUzQrvf-A7BOaDWEBWAgfvQHayhEJ_4",
   authDomain: "mercearia-miranda-e3874.firebaseapp.com",
   projectId: "mercearia-miranda-e3874",

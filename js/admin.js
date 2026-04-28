@@ -6,7 +6,7 @@ const ADMIN_PASSWORD = "miranda2024"; // <- sua senha de acesso
 // ============================================================
 // FIREBASE — cole suas chaves aqui (sem aspas nos valores)
 // ============================================================
-const firebaseConfig = {
+const FIREBASE_CONFIG = {
   apiKey: "AIzaSyCQmUzQrvf-A7BOaDWEBWAgfvQHayhEJ_4",
   authDomain: "mercearia-miranda-e3874.firebaseapp.com",
   projectId: "mercearia-miranda-e3874",
