@@ -69,46 +69,69 @@
           <div class="config-title">Firebase não configurado</div>
           <div class="config-desc">
             Sem o Firebase, as alterações só ficam salvas neste navegador.
-            Configure para sincronizar com o site dos clientes em tempo real.
           </div>
-          <button class="config-btn" onclick="openSetup()">Configurar Firebase →</button>
         </div>
       </div>
 
-      <!-- TOOLBAR -->
-      <div class="toolbar">
-        <div class="toolbar-left">
-          <div class="page-title">Cervejas</div>
-          <span class="product-count" id="prod-count">0 produtos</span>
-        </div>
-        <div class="toolbar-right">
-          <div class="search-box">
-            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-            </svg>
-            <input type="text" placeholder="Buscar..." oninput="onSearch(event)">
+      <!-- ABAS PRINCIPAIS -->
+      <div class="main-tabs">
+        <button class="main-tab active" id="tab-cervejas" onclick="switchMainTab('cervejas')">🍺 Cervejas</button>
+        <button class="main-tab" id="tab-combos" onclick="switchMainTab('combos')">🎁 Combos</button>
+      </div>
+
+      <!-- ===== SEÇÃO CERVEJAS ===== -->
+      <div id="section-cervejas">
+        <div class="toolbar">
+          <div class="toolbar-left">
+            <div class="page-title">Cervejas</div>
+            <span class="product-count" id="prod-count">0 produtos</span>
           </div>
-          <button class="add-btn" onclick="openAdd()">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-              <path d="M12 5v14M5 12h14"/>
-            </svg>
-            Adicionar
-          </button>
+          <div class="toolbar-right">
+            <div class="search-box">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+              </svg>
+              <input type="text" placeholder="Buscar..." oninput="onSearch(event)">
+            </div>
+            <button class="add-btn" onclick="openAdd()">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path d="M12 5v14M5 12h14"/>
+              </svg>
+              Adicionar
+            </button>
+          </div>
         </div>
+        <div class="filter-row" id="filter-row"></div>
+        <div id="loading" class="loading">
+          <div class="spinner"></div>
+          <span>Carregando produtos...</span>
+        </div>
+        <div class="product-list" id="product-list"></div>
       </div>
 
-      <div class="filter-row" id="filter-row"></div>
-
-      <div id="loading" class="loading">
-        <div class="spinner"></div>
-        <span>Carregando produtos...</span>
+      <!-- ===== SEÇÃO COMBOS ===== -->
+      <div id="section-combos" style="display:none">
+        <div class="toolbar">
+          <div class="toolbar-left">
+            <div class="page-title">Combos</div>
+            <span class="product-count" id="combo-count">0 combos</span>
+          </div>
+          <div class="toolbar-right">
+            <button class="add-btn" onclick="openAddCombo()">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path d="M12 5v14M5 12h14"/>
+              </svg>
+              Novo Combo
+            </button>
+          </div>
+        </div>
+        <div class="combos-grid-admin" id="combos-grid-admin"></div>
       </div>
-      <div class="product-list" id="product-list"></div>
 
     </div>
   </div>
 
-  <!-- ADD / EDIT MODAL -->
+  <!-- ===== MODAL ADD/EDIT CERVEJA ===== -->
   <div class="modal-overlay hidden" id="prod-modal">
     <div class="modal">
       <div class="modal-header">
@@ -161,71 +184,83 @@
       </div>
       <div class="modal-footer">
         <button class="cancel-btn" onclick="closeModal()">Cancelar</button>
-        <button class="save-btn"   onclick="saveProduct()">Salvar produto</button>
+        <button class="save-btn" onclick="saveProduct()">Salvar produto</button>
       </div>
     </div>
   </div>
 
-  <!-- FIREBASE SETUP MODAL -->
-  <div class="modal-overlay hidden" id="setup-modal">
+  <!-- ===== MODAL ADD/EDIT COMBO ===== -->
+  <div class="modal-overlay hidden" id="combo-modal">
     <div class="modal">
       <div class="modal-header">
-        <h3>🔥 Configurar Firebase</h3>
-        <button class="close-btn" onclick="closeSetup()">&#x2715;</button>
+        <h3 id="combo-modal-title">Novo Combo</h3>
+        <button class="close-btn" onclick="closeComboModal()">&#x2715;</button>
       </div>
       <div class="modal-body">
-        <div class="setup-step">
-          <span class="setup-step-num">1</span>
-          <span class="setup-step-text">
-            Acesse <a href="https://console.firebase.google.com" target="_blank">console.firebase.google.com</a>
-            e clique em <strong>Adicionar projeto</strong>. Nome sugerido: <code>mercearia-miranda</code>
-          </span>
+        <div class="form-group full">
+          <div class="img-upload" onclick="document.getElementById('c-img').click()">
+            <input type="file" id="c-img" accept="image/*" onchange="previewComboImg(this)">
+            <img id="combo-img-preview" class="img-upload-preview hidden" src="" alt="preview">
+            <div id="combo-img-placeholder">
+              <div style="font-size:32px;margin-bottom:8px">🖼️</div>
+              <div class="img-upload-text"><span>Clique para enviar</span> a imagem do combo</div>
+            </div>
+          </div>
         </div>
-        <div class="setup-step">
-          <span class="setup-step-num">2</span>
-          <span class="setup-step-text">
-            Dentro do projeto, clique em <strong>Firestore Database</strong> →
-            <strong>Criar banco de dados</strong> → <strong>Modo de teste</strong> → <strong>Ativar</strong>
-          </span>
+        <div class="form-row">
+          <div class="form-group full">
+            <label class="form-label">Nome do combo</label>
+            <input class="form-input" type="text" id="c-name" placeholder="Ex: Kit Churrasco">
+          </div>
+          <div class="form-group full">
+            <label class="form-label">Tag (etiqueta pequena)</label>
+            <input class="form-input" type="text" id="c-tag" placeholder="Ex: O favorito do finde">
+          </div>
+          <div class="form-group full">
+            <label class="form-label">Descrição dos itens</label>
+            <input class="form-input" type="text" id="c-desc" placeholder="Ex: Skol x12 + Rufus + Doritos">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Preço (R$)</label>
+            <input class="form-input" type="number" id="c-price" placeholder="79.90" step="0.01" min="0">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Texto de economia</label>
+            <input class="form-input" type="text" id="c-saving" placeholder="Ex: Economize R$ 12,00">
+          </div>
+          <div class="form-group full">
+            <label class="form-label">Itens do combo (um por linha)</label>
+            <textarea class="form-input" id="c-items" rows="4"
+              placeholder="Skol Lata 350ml x12&#10;Rufus Ondulado&#10;Doritos Nacho"
+              style="resize:vertical"></textarea>
+          </div>
+          <div class="form-group full">
+            <label class="form-label">Cor do destaque</label>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
+              <button class="color-opt active" data-cor="#f5a623" onclick="selectCor(this)" style="background:#f5a623"></button>
+              <button class="color-opt" data-cor="#22c55e" onclick="selectCor(this)" style="background:#22c55e"></button>
+              <button class="color-opt" data-cor="#3b82f6" onclick="selectCor(this)" style="background:#3b82f6"></button>
+              <button class="color-opt" data-cor="#ef4444" onclick="selectCor(this)" style="background:#ef4444"></button>
+              <button class="color-opt" data-cor="#a855f7" onclick="selectCor(this)" style="background:#a855f7"></button>
+              <button class="color-opt" data-cor="#f97316" onclick="selectCor(this)" style="background:#f97316"></button>
+              <button class="color-opt" data-cor="#ec4899" onclick="selectCor(this)" style="background:#ec4899"></button>
+            </div>
+          </div>
         </div>
-        <div class="setup-step">
-          <span class="setup-step-num">3</span>
-          <span class="setup-step-text">
-            No menu lateral, clique em <strong>Configurações do projeto</strong> (engrenagem) →
-            role até <strong>Seus aplicativos</strong> → clique no ícone <strong>&lt;/&gt; Web</strong>
-            e copie as chaves abaixo
-          </span>
-        </div>
-        <div class="config-input-group">
-          <div class="form-group">
-            <label class="form-label config-label">API KEY</label>
-            <input class="form-input" id="cfg-apiKey" placeholder="AIzaSy...">
+        <div class="avail-row">
+          <div>
+            <div class="avail-label">Combo ativo</div>
+            <div class="avail-sub">Combos inativos ficam ocultos no site dos clientes</div>
           </div>
-          <div class="form-group">
-            <label class="form-label config-label">AUTH DOMAIN</label>
-            <input class="form-input" id="cfg-authDomain" placeholder="seu-projeto.firebaseapp.com">
-          </div>
-          <div class="form-group">
-            <label class="form-label config-label">PROJECT ID</label>
-            <input class="form-input" id="cfg-projectId" placeholder="mercearia-miranda">
-          </div>
-          <div class="form-group">
-            <label class="form-label config-label">STORAGE BUCKET</label>
-            <input class="form-input" id="cfg-storageBucket" placeholder="seu-projeto.appspot.com">
-          </div>
-          <div class="form-group">
-            <label class="form-label config-label">MESSAGING SENDER ID</label>
-            <input class="form-input" id="cfg-messagingSenderId" placeholder="123456789">
-          </div>
-          <div class="form-group">
-            <label class="form-label config-label">APP ID</label>
-            <input class="form-input" id="cfg-appId" placeholder="1:123...">
-          </div>
+          <label class="toggle" style="flex-shrink:0">
+            <input type="checkbox" id="c-available" checked>
+            <span class="toggle-slider"></span>
+          </label>
         </div>
       </div>
       <div class="modal-footer">
-        <button class="cancel-btn" onclick="closeSetup()">Cancelar</button>
-        <button class="save-btn"   onclick="saveFirebaseConfig()">Salvar e conectar</button>
+        <button class="cancel-btn" onclick="closeComboModal()">Cancelar</button>
+        <button class="save-btn" onclick="saveCombo()">Salvar combo</button>
       </div>
     </div>
   </div>
