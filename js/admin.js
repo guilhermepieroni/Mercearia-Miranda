@@ -435,9 +435,18 @@ function saveCombosLocal() {
 
 async function listenCombos() {
   if (!isFirebaseReady) { loadCombos(); return; }
-  const { collection, onSnapshot } = window._fb;
-  onSnapshot(collection(db, "combos"), (snap) => {
-    if (snap.empty) { loadCombos(); return; }
+  const { collection, onSnapshot, addDoc, serverTimestamp } = window._fb;
+  onSnapshot(collection(db, "combos"), async (snap) => {
+    if (snap.empty) {
+      // Firebase vazio — migra os combos padrão para o banco
+      const defaults = JSON.parse(JSON.stringify(DEFAULT_COMBOS));
+      for (const c of defaults) {
+        const { id, ...data } = c;
+        await addDoc(collection(db, "combos"), { ...data, createdAt: serverTimestamp() });
+      }
+      // O onSnapshot vai disparar novamente com os dados inseridos
+      return;
+    }
     combos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     renderCombosAdmin();
   }, () => loadCombos());
