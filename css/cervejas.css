@@ -46,7 +46,7 @@ nav {
   border-bottom: 1px solid var(--border);
 }
 .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 62px; gap: 16px; }
-.nav-logo { height: 80px; width: auto; filter: drop-shadow(0 0 8px rgba(245,166,35,0.4)); }
+.nav-logo { height: 60px; width: auto; filter: drop-shadow(0 0 8px rgba(245,166,35,0.4)); }
 .nav-right { display: flex; align-items: center; gap: 12px; }
 .age-badge { font-size: 11px; font-weight: 700; color: var(--gold); border: 1.5px solid var(--gold); padding: 4px 10px; border-radius: 20px; letter-spacing: .05em; }
 .cart-btn {
@@ -209,7 +209,7 @@ nav {
 
 /* ===== FOOTER ===== */
 footer { background: var(--dark2); border-top: 1px solid var(--border); padding: 28px 20px; text-align: center; position: relative; z-index: 1; }
-.footer-logo { height: 36px; width: auto; margin: 0 auto 10px; display: block; opacity: .7; }
+.footer-logo { height: 50px; width: auto; margin: 0 auto 10px; display: block; opacity: .7; }
 .footer-text { font-size: 13px; color: var(--text-muted); }
 .footer-age { display: inline-block; margin-top: 10px; font-size: 11px; font-weight: 700; color: var(--gold); border: 1px solid rgba(245,166,35,0.3); padding: 3px 10px; border-radius: 10px; }
 
